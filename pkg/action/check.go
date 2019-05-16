@@ -1,30 +1,31 @@
 package action
 
 import (
-	"errors"
 	"flag"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/http/rest"
+	"net/http"
 )
 
-func Check() error {
-	jiraApiUrl := flag.String("url", "", "")
-	username := flag.String("username", "", "")
-	password := flag.String("password", "", "")
-	issuePrefix := flag.String("prefix", "", "")
+func Check() bool {
+	jiraApiUrl := flag.String("url", "", "The base URL of the Jira Rest API to be used (without the http|https)")
+	protocol := flag.String("protocol", "https", "The http protocol to be used (http|https)")
+	username := flag.String("username", "", "Username used to establish a secure connection with the Jira Rest API")
+	password := flag.String("password", "", "Password used by the username in the connection to the Jira Rest API")
 	issueId := flag.String("id", "", "")
 
 	flag.Parse()
 
-	if *issuePrefix == "" || *issueId == "" || *jiraApiUrl == "" || *username == "" || *password == "" {
-		err := errors.New("all arguments must be set")
+	if *issueId == "" || *jiraApiUrl == "" || *username == "" || *password == "" {
 		flag.Usage()
-		return err
+		return false
 	}
 
 	md := rest.Metadata{}
 	md.Url = *jiraApiUrl
+	md.Protocol = *protocol
+	md.HttpMethod = http.MethodGet
 	md.Username = *username
 	md.Password = *password
 
-	return rest.GetIssue(md, *issuePrefix, *issueId)
+	return rest.IssueExists(md, *issueId)
 }

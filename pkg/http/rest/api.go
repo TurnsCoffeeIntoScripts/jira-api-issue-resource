@@ -5,17 +5,27 @@ import (
 	"errors"
 	"fmt"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/domain"
-	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
-func GetIssue(md Metadata, prefix string, id string) error {
-	return apiCall(md, "issue/" + prefix + "-" + string(id))
+func IssueExists(md Metadata, id string) bool {
+	issue, err := apiCall(md, "issue/" + string(id))
+	if issue == nil || err != nil {
+		return false
+	}
+
+	return true
 }
 
-func apiCall(md Metadata, op string) error {
-	baseUrl := md.Url
+func GetIssue(md Metadata, id string) (*domain.Issue, error) {
+	return apiCall(md, "issue/" + string(id))
+}
+
+func apiCall(md Metadata, op string) (*domain.Issue, error) {
+	client := http.DefaultClient
+
+	baseUrl := md.AuthenticatedUrl()
 	if !strings.HasSuffix(baseUrl, "/") {
 		baseUrl = baseUrl + "/"
 	}
@@ -25,22 +35,33 @@ func apiCall(md Metadata, op string) error {
 	}
 
 	url := baseUrl + op
-	response, err := http.Get(url)
+	req, newReqErr := http.NewRequest(md.HttpMethod, url, nil)
 
-	if err != nil {
-		errMsg := fmt.Sprintf("http request failed with error %s", err)
-		return errors.New(errMsg)
-	} else {
-		data, _ := ioutil.ReadAll(response.Body)
-		issue := domain.Issue{}
-		unmarshalErr := json.Unmarshal(data, issue)
-
-		if unmarshalErr != nil {
-			return errors.New("unmarshalling failed")
-		} else {
-			fmt.Println(issue.Id)
-		}
+	if newReqErr != nil {
+		errMsg := fmt.Sprintf("http request failed with error %s", newReqErr)
+		return nil, errors.New(errMsg)
 	}
 
-	return nil
+	resp, respErr := client.Do(req)
+
+	if respErr != nil {
+		errMsg := fmt.Sprintf("http request failed with error %s", respErr)
+		return nil, errors.New(errMsg)
+	}
+
+	defer resp.Body.Close()
+
+	var issue domain.Issue
+
+	if decodeErr := json.NewDecoder(resp.Body).Decode(&issue); decodeErr != nil {
+		errMsg := fmt.Sprintf("http request failed with error %s", decodeErr)
+		return nil, errors.New(errMsg)
+	}
+
+	if issue.Id == "" {
+		errMsg := fmt.Sprintf("Issue doesn't exists")
+		return nil, errors.New(errMsg)
+	}
+
+	return &issue, nil
 }
