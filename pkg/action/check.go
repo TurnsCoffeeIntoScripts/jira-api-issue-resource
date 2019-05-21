@@ -11,7 +11,7 @@ func Check() bool {
 	protocol := flag.String("protocol", "https", "The http protocol to be used (http|https)")
 	username := flag.String("username", "", "Username used to establish a secure connection with the Jira Rest API")
 	password := flag.String("password", "", "Password used by the username in the connection to the Jira Rest API")
-	issueId := flag.String("id", "", "")
+	issueId := flag.String("id", "", "The Jira ticket ID (Format: <PROJECT_KEY>-<NUMBER>")
 
 	flag.Parse()
 
