@@ -1,7 +1,5 @@
 package rest
 
-// TODO: https://docs.atlassian.com/software/jira/docs/api/REST/8.2.0/
-
 import (
 	"bytes"
 	"encoding/json"
