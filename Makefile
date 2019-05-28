@@ -6,17 +6,17 @@ GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
-MAIN_PATH=cmd/jira-api/
-BINARY=jiraApiResource
+JIRA_API_PATH=cmd/jira-api/
+JIRA_API_BINARY=jiraApiResource
 
 # TODO add test
 all: build
 
 build:
-	cd $(MAIN_PATH) && $(GOBUILD) -o $(BINARY) -v
+	cd $(JIRA_API_PATH) && $(GOBUILD) -o $(JIRA_API_BINARY) -v
 
 #test:
 
 clean:
-	cd $(MAIN_PATH) && $(GOCLEAN)
-	rm $(MAIN_PATH)/$(BINARY)
+	cd $(JIRA_API_PATH) && $(GOCLEAN)
+	rm $(JIRA_API_PATH)/$(JIRA_API_BINARY)
