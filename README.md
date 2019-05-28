@@ -1,6 +1,6 @@
 # jira-api-resource
 
-[![Build Status](https://travis-ci.com/TurnsCoffeeIntoScripts/jira-api-resource.svg?branch=master)](https://travis-ci.com/TurnsCoffeeIntoScripts/jira-api-resource)
+[![Build Status](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-resource.svg?branch=master)](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-resource)
 
 
 
