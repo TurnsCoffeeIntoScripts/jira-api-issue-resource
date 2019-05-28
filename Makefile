@@ -1,38 +1,25 @@
-#
-# This make file is based on: https://github.com/thockin/go-build-template/blob/master/Makefile
-#
+# TODO see: https://sohlich.github.io/post/go_makefile/
 
-# The binary to build
-BIN := jira-api-resource
+# Go parameters
+GOCMD=go
+GOBUILD=$(GOCMD) build
+GOCLEAN=$(GOCMD) clean
+GOTEST=$(GOCMD) test
+GOGET=$(GOCMD) get
+FIND_TAG_BINARY_PATH=cmd/find-tag/
+FIND_TAG_BINARY=findTag
 
-# Where to push the docker image
-REGISTRY ?= thescripter777
-
-# Version strings is based on git tags
-VERSION := $(shell git describe --tags --always --dirty)
-
-# Directories containing go code
-SRC_DIRS := cmd pkg
-
-ALL_PLATFORMS := linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x
-
-# User should pass GOOD and/or GOARCH
-OS := $(if $(GOOS),$(GOOS), $(shell go env GOOS))
-ARCH := $(if $(GOARCH),$(GOARCH), $(shell go env GOARCH))
-
-BASEIMAGE ?= gcr.io/distroless/static
-
-IMAGE := $(REGISTRY)/$(BIN)
-TAG := $(VERSION)__$(OS)_$(ARCH)
-
-BUILD_IMAGE ?= golang:1.12-alpine
-
+# TODO add test
 all: build
 
-build-%:
-	@$(MAKE) build 							\
-		--no-print-directory				\
-		GOOS=$(firstword $(subst _, ,$*)) 	\
-		GOARCH=$(lastword $(subst _, ,$*))
+build:
+	make build_find_tag
 
-## WORK IN PROGRES... MORE TO COME
+build_find_tag:
+	cd $(FIND_TAG_BINARY_PATH) && $(GOBUILD) -o $(FIND_TAG_BINARY) -v
+
+#test:
+
+clean:
+	cd $(FIND_TAG_BINARY_PATH) && $(GOCLEAN)
+	rm $(FIND_TAG_BINARY_PATH)/$(FIND_TAG_BINARY)
