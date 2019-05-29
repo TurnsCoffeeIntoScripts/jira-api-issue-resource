@@ -53,14 +53,4 @@ The configuration to use for add a comment to the specified ticket is `add-comme
 
 **Example**:
 ``` yml
-resources:
-- name: qa
-  type: git
-  source:
-    uri: ssh://git@git.abc.com:1234/test/dev/repo.git
-    branch: develop
-    private_key: ((git-key))
-    tag_format: QA_{dateh}/v#
-    tag_increment: num
-    use_date: today
 ```
