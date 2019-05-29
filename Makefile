@@ -1,22 +1,30 @@
-# TODO see: https://sohlich.github.io/post/go_makefile/
+# https://sahilm.com/makefiles-for-golang/
+
+PKGS=$(shell go list ./... | grep -v /vendor)
+
+.PHONY: all build test clean run remake
 
 # Go parameters
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
-GOGET=$(GOCMD) get
-MAIN_PATH=cmd/jira-api/
-BINARY=jiraApiResource
+JIRA_API_PATH=cmd/jira-api/
+JIRA_API_BINARY=jiraApiResource
 
-# TODO add test
-all: build
+all: build test
 
 build:
-	cd $(MAIN_PATH) && $(GOBUILD) -o $(BINARY) -v
+	cd $(JIRA_API_PATH) && $(GOBUILD) -o $(JIRA_API_BINARY) -v
 
-#test:
+test: build
+	$(GOTEST) $(PKGS)
 
 clean:
-	cd $(MAIN_PATH) && $(GOCLEAN)
-	rm $(MAIN_PATH)/$(BINARY)
+	cd $(JIRA_API_PATH) && $(GOCLEAN)
+	rm $(JIRA_API_PATH)/$(JIRA_API_BINARY)
+
+remake: clean all
+
+run:
+	$(JIRA_API_PATH)/$(JIRA_API_BINARY) --username=TestUser1

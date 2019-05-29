@@ -2,3 +2,8 @@ language: go
 
 go:
   - "1.12"
+
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S)?$/

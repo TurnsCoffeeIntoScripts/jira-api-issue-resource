@@ -5,13 +5,35 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/configuration"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/domain"
 	"net/http"
 	"strings"
 )
 
-func Get(apiOperation string, id string, md Metadata) (bool, *domain.Issue) {
-	apiOperation = checkUrl(apiOperation, id)
+func ApiCall(ctx configuration.Context) (bool, error){
+	ctx.Metadata.HttpMethod = http.MethodGet
+	issue, getErr := apiCall(ctx.Metadata, "/issue/" + ctx.IssueId, nil)
+	if getErr != nil {
+		return false, getErr
+	}
+
+	currentIssueId := ctx.IssueId
+	if ctx.ForceOnParent && issue.HasParent() {
+		currentIssueId = issue.GetParent().Key
+	}
+
+	apiOperation := checkUrl(ctx.ApiEndPoint, configuration.IssuePlaceholder, currentIssueId)
+
+	ctx.Metadata.HttpMethod = ctx.HttpMethod
+	// TODO: put apiCalDummy to not spam the REST api while other local features are being developed... remove after
+	_, err := apiCallDummy(ctx.Metadata, apiOperation, ctx.Body)
+
+	return err == nil, err
+}
+
+func Get(apiOperation string, id string, md configuration.Metadata) (bool, *domain.Issue) {
+	//apiOperation = checkUrl(apiOperation, id)
 
 	md.HttpMethod = http.MethodGet
 	issue, err := apiCall(md, apiOperation, nil)
@@ -22,8 +44,8 @@ func Get(apiOperation string, id string, md Metadata) (bool, *domain.Issue) {
 	return true, issue
 }
 
-func Post(apiOperation string, id string, md Metadata, data map[string]string) bool {
-	apiOperation = checkUrl(apiOperation, id)
+func Post(apiOperation string, id string, md configuration.Metadata, data map[string]string) bool {
+	//apiOperation = checkUrl(apiOperation, id)
 
 	md.HttpMethod = http.MethodPost
 	body := buildJsonBodyFromMap(data)
@@ -52,15 +74,19 @@ func buildJsonBodyFromMap(data map[string]string) []byte {
 	return buffer.Bytes()
 }
 
-func checkUrl(url string, value string) string {
-	if strings.Contains(url, "??") {
-		return strings.ReplaceAll(url, "??", value)
+func checkUrl(url string, findValue, replaceValue string) string {
+	if strings.Contains(url, findValue) {
+		return strings.ReplaceAll(url, findValue, replaceValue)
 	}
 
 	return url
 }
 
-func apiCall(md Metadata, op string, body []byte) (*domain.Issue, error) {
+func apiCallDummy(md configuration.Metadata, op string, body []byte) (*domain.Issue, error) {
+	return nil, nil
+}
+
+func apiCall(md configuration.Metadata, op string, body []byte) (*domain.Issue, error) {
 	client := http.DefaultClient
 
 	baseUrl := md.AuthenticatedUrl()
