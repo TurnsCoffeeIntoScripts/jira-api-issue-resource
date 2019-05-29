@@ -27,14 +27,15 @@ func CommentOnIssue(flags configuration.JiraApiResourceFlags) bool {
 		return success
 	}
 
-	flags.PopulateMap()
-	return rest.Post("issue/??/comment", *flags.IssueId, *md, flags.Data)
+	//flags.PopulateMap()
+	//return rest.Post("issue/??/comment", *flags.IssueId, *md, flags.Data)
+	return false
 }
 
 func setup(flags configuration.JiraApiResourceFlags) (bool, *rest.Metadata) {
-	if !flags.Validate() {
-		return false, nil
-	}
+	//if !flags.Validate() {
+		//return false, nil
+	//}
 
 	md := rest.Metadata{}
 	md.Initialize(flags)
