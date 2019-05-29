@@ -33,6 +33,49 @@ func TestValidateBaseFlags_Success(t *testing.T) {
 }
 
 func TestValidateBaseFlags_FailureURL(t *testing.T) {
+	*data.Username = dummyUsername
+	*data.Password = dummyPassword
+	*data.IssueId = dummyIssue
+
+	ok := data.ValidateBaseFlags()
+	resetData()
+
+	if ok {
+		t.Errorf("JiraApiResourceFlags validation should not have been successful but was. (Expected: %t, got: %t)", false, ok)
+	}
+}
+
+func TestValidateBaseFlags_FailureUsername(t *testing.T) {
+	*data.JiraApiUrl = dummyUrl
+	*data.Password = dummyPassword
+	*data.IssueId = dummyIssue
+
+	ok := data.ValidateBaseFlags()
+	resetData()
+
+	if ok {
+		t.Errorf("JiraApiResourceFlags validation should not have been successful but was. (Expected: %t, got: %t)", false, ok)
+	}
+}
+
+func TestValidateBaseFlags_FailurePassword(t *testing.T) {
+	*data.JiraApiUrl = dummyUrl
+	*data.Username = dummyUsername
+	*data.IssueId = dummyIssue
+
+	ok := data.ValidateBaseFlags()
+	resetData()
+
+	if ok {
+		t.Errorf("JiraApiResourceFlags validation should not have been successful but was. (Expected: %t, got: %t)", false, ok)
+	}
+}
+
+func TestValidateBaseFlags_FailureIssue(t *testing.T) {
+	*data.JiraApiUrl = dummyUrl
+	*data.Username = dummyUsername
+	*data.Password = dummyPassword
+
 	ok := data.ValidateBaseFlags()
 	resetData()
 

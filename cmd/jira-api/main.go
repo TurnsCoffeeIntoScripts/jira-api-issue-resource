@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/configuration"
+	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/http/rest"
 	"os"
 )
 
@@ -14,6 +16,12 @@ func main() {
 		flag.Usage()
 		os.Exit(0)
 	} else {
-		configuration.GetExecutionContext().Execute()
+		ok, err := rest.ApiCall(configuration.GetExecutionContext(flags))
+
+		if !ok {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
 	}
 }

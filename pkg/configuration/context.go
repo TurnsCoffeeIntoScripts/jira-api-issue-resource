@@ -1,8 +1,28 @@
 package configuration
 
-import "github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/execution"
+type Context struct {
+	IssueId     string
+	ApiEndPoint string
+	HttpMethod  string
+	Metadata    Metadata
+	Body        []byte
 
-func GetExecutionContext() *execution.Context {
+	// Context parametrization
+	ForceOnParent bool
+}
 
-	return nil
+func GetExecutionContext(flags JiraApiResourceFlags) Context {
+	ctx := Context{}
+	md := Metadata{}
+
+	md.Initialize(flags)
+	ctx.Metadata = md
+	ctx.IssueId = *flags.IssueId
+	ctx.ForceOnParent = *flags.ForceOnParent
+
+	if *flags.CtxComment {
+		ctx = SetContextComment(ctx)
+	}
+
+	return ctx
 }

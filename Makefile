@@ -1,3 +1,5 @@
+# https://sahilm.com/makefiles-for-golang/
+
 PKGS=$(shell go list ./... | grep -v /vendor)
 
 .PHONY: all build test clean run remake

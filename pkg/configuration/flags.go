@@ -5,13 +5,17 @@ import (
 )
 
 type JiraApiResourceFlags struct {
-	ShowHelp   *bool
-	JiraApiUrl *string
-	Protocol   *string
-	Username   *string
-	Password   *string
-	IssueId    *string
-	Body       *string
+	ShowHelp      *bool
+	JiraApiUrl    *string
+	Protocol      *string
+	Username      *string
+	Password      *string
+	IssueId       *string
+	Body          *string
+	ForceOnParent *bool
+
+	// Context flags
+	CtxComment *bool
 }
 
 func (f *JiraApiResourceFlags) SetupFlags(parse bool) {
@@ -22,6 +26,10 @@ func (f *JiraApiResourceFlags) SetupFlags(parse bool) {
 	f.Password = flag.String("password", "", "Password used by the username in the connection to the Jira Rest API")
 	f.IssueId = flag.String("id", "", "The Jira ticket ID (Format: <PROJECT_KEY>-<NUMBER>")
 	f.Body = flag.String("body", "", "The body of content to set (description, comment, etc.")
+	f.ForceOnParent = flag.Bool("force-on-parent", false, "")
+
+	// Context flags
+	f.CtxComment = flag.Bool("comment", false, "")
 
 	if parse {
 		flag.Parse()
