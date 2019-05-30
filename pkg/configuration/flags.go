@@ -13,15 +13,18 @@ type JiraApiResourceFlags struct {
 	IssueId       *string
 	RawIssueList  *string
 	Body          *string
+	Label         *string
 	ForceOnParent *bool
 	ForceFinish   *bool
 
 	// Context flags
-	CtxComment *bool
+	CtxComment  *bool
+	CtxAddLabel *bool
 
 	// Initialized flags (can't be set via any input flags)
 	SingleIssue   bool
 	MultipleIssue bool
+	ZeroIssue     bool
 }
 
 func (f *JiraApiResourceFlags) SetupFlags(parse bool) bool {
@@ -33,11 +36,13 @@ func (f *JiraApiResourceFlags) SetupFlags(parse bool) bool {
 	f.IssueId = flag.String("id", "", "The Jira ticket ID (Format: <PROJECT_KEY>-<NUMBER>")
 	f.RawIssueList = flag.String("ids", "", "")
 	f.Body = flag.String("body", "", "The body of content to set (description, comment, etc.")
+	f.Label = flag.String("label", "", "")
 	f.ForceOnParent = flag.Bool("force-on-parent", false, "")
 	f.ForceFinish = flag.Bool("force-finish", false, "Force jira-api-resource to execute every API call before exiting, even if a previous one failed")
 
 	// Context flags
 	f.CtxComment = flag.Bool("comment", false, "")
+	f.CtxAddLabel = flag.Bool("add-label", false, "")
 
 	if parse {
 		flag.Parse()
@@ -57,7 +62,7 @@ func (f *JiraApiResourceFlags) ValidateBaseFlags() bool {
 	} else if *f.IssueId != "" {
 		f.SingleIssue = true
 	} else {
-		return false
+		f.ZeroIssue = true
 	}
 
 	return true

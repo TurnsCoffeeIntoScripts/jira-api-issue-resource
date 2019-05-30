@@ -13,3 +13,15 @@ func (i *Issue) HasParent() bool {
 func (i *Issue) GetParent() *Issue {
 	return i.Fields.Parent
 }
+
+type AddLabelIssue struct {
+	Update AddLabelIssueFields `json:"update"`
+}
+
+type AddLabelIssueFields struct {
+	Fields FieldsLabelOnly `json:"fields"`
+}
+
+type FieldsLabelOnly struct {
+	Labels []JiraLabel `json:"labels"`
+}

@@ -12,7 +12,9 @@ import (
 )
 
 func ApiCall(ctx configuration.Context) (bool, error) {
-	if ctx.Metadata.ResourceFlags.SingleIssue {
+	if ctx.Metadata.ResourceFlags.ZeroIssue {
+		return noIssueApiCall(ctx)
+	} else if ctx.Metadata.ResourceFlags.SingleIssue {
 		return singleApiCall(ctx, ctx.IssueIds[0])
 	} else {
 		return multipleApiCall(ctx)
@@ -20,9 +22,16 @@ func ApiCall(ctx configuration.Context) (bool, error) {
 
 }
 
+func noIssueApiCall(ctx configuration.Context) (bool, error) {
+	ctx.Metadata.HttpMethod = ctx.HttpMethod
+	_, err := executeApiCall(ctx.Metadata, ctx.ApiEndPoint, ctx.Body, false)
+
+	return err == nil, err
+}
+
 func singleApiCall(ctx configuration.Context, issueId string) (bool, error) {
 	ctx.Metadata.HttpMethod = http.MethodGet
-	issue, getErr := executeApiCall(ctx.Metadata, "/issue/"+issueId, nil)
+	issue, getErr := executeApiCall(ctx.Metadata, "/issue/"+issueId, nil, true)
 	if getErr != nil {
 		return false, getErr
 	}
@@ -35,7 +44,7 @@ func singleApiCall(ctx configuration.Context, issueId string) (bool, error) {
 	apiOperation := checkUrl(ctx.ApiEndPoint, configuration.IssuePlaceholder, currentIssueId)
 
 	ctx.Metadata.HttpMethod = ctx.HttpMethod
-	_, err := executeApiCall(ctx.Metadata, apiOperation, ctx.Body)
+	_, err := executeApiCall(ctx.Metadata, apiOperation, ctx.Body, true)
 
 	return err == nil, err
 }
@@ -74,7 +83,7 @@ func apiCallDummy(md configuration.Metadata, op string, body []byte) (*domain.Is
 	return nil, nil
 }
 
-func executeApiCall(md configuration.Metadata, op string, body []byte) (*domain.Issue, error) {
+func executeApiCall(md configuration.Metadata, op string, body []byte, needDomainObject bool) (*domain.Issue, error) {
 	client := http.DefaultClient
 
 	baseUrl := md.AuthenticatedUrl()
@@ -104,6 +113,9 @@ func executeApiCall(md configuration.Metadata, op string, body []byte) (*domain.
 		req.Header.Set("Content-Type", "application/json")
 	}
 
+	fmt.Println(op)
+	fmt.Println(string(body))
+
 	resp, respErr := client.Do(req)
 
 	if respErr != nil {
@@ -111,19 +123,22 @@ func executeApiCall(md configuration.Metadata, op string, body []byte) (*domain.
 		return nil, errors.New(errMsg)
 	}
 
-	defer resp.Body.Close()
+	if needDomainObject && md.HttpMethod == http.MethodGet {
+		defer resp.Body.Close()
 
-	var issue domain.Issue
+		var issue domain.Issue
 
-	if decodeErr := json.NewDecoder(resp.Body).Decode(&issue); decodeErr != nil {
-		errMsg := fmt.Sprintf("http request failed with error %s", decodeErr)
-		return nil, errors.New(errMsg)
+		if decodeErr := json.NewDecoder(resp.Body).Decode(&issue); decodeErr != nil {
+			errMsg := fmt.Sprintf("http request failed with error %s", decodeErr)
+			return nil, errors.New(errMsg)
+		}
+
+		if issue.Id == "" {
+			errMsg := fmt.Sprintf("Issue doesn't exists")
+			return nil, errors.New(errMsg)
+		}
+		return &issue, nil
 	}
 
-	if issue.Id == "" {
-		errMsg := fmt.Sprintf("Issue doesn't exists")
-		return nil, errors.New(errMsg)
-	}
-
-	return &issue, nil
+	return nil, nil
 }

@@ -27,8 +27,8 @@ func (c *Context) Initialize(md Metadata) {
 	c.ForceOnParent = *md.ResourceFlags.ForceOnParent
 }
 
-func GetExecutionContext(flags JiraApiResourceFlags) Context {
-	ctx := Context{}
+func GetExecutionContext(flags JiraApiResourceFlags) *Context {
+	ctx := &Context{}
 	md := Metadata{}
 
 	md.Initialize(flags)
@@ -36,6 +36,8 @@ func GetExecutionContext(flags JiraApiResourceFlags) Context {
 
 	if *flags.CtxComment {
 		ctx = SetContextComment(ctx)
+	} else if *flags.CtxAddLabel {
+		ctx = SetContextAddLabel(ctx)
 	}
 
 	return ctx
