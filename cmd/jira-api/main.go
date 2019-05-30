@@ -10,18 +10,23 @@ import (
 
 func main() {
 	flags := configuration.JiraApiResourceFlags{}
-	flags.SetupFlags(true)
+	ok := flags.SetupFlags(true)
 
-	if *flags.ShowHelp {
+	if !ok || *flags.ShowHelp {
 		flag.Usage()
 		os.Exit(0)
 	} else {
-		ok, err := rest.ApiCall(configuration.GetExecutionContext(flags))
+		ctx := configuration.GetExecutionContext(flags)
+		if ctx != nil {
+			ok, err := rest.ApiCall(*ctx)
 
-		if !ok {
-			fmt.Println(err)
+			if !ok {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		} else {
+			fmt.Println("Unable to get execution context")
 			os.Exit(1)
 		}
-
 	}
 }

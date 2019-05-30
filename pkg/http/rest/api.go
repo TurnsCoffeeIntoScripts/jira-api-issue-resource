@@ -11,14 +11,32 @@ import (
 	"strings"
 )
 
-func ApiCall(ctx configuration.Context) (bool, error){
+func ApiCall(ctx configuration.Context) (bool, error) {
+	if ctx.Metadata.ResourceFlags.ZeroIssue {
+		return noIssueApiCall(ctx)
+	} else if ctx.Metadata.ResourceFlags.SingleIssue {
+		return singleApiCall(ctx, ctx.IssueIds[0])
+	} else {
+		return multipleApiCall(ctx)
+	}
+
+}
+
+func noIssueApiCall(ctx configuration.Context) (bool, error) {
+	ctx.Metadata.HttpMethod = ctx.HttpMethod
+	_, err := executeApiCall(ctx.Metadata, ctx.ApiEndPoint, ctx.Body, false)
+
+	return err == nil, err
+}
+
+func singleApiCall(ctx configuration.Context, issueId string) (bool, error) {
 	ctx.Metadata.HttpMethod = http.MethodGet
-	issue, getErr := apiCall(ctx.Metadata, "/issue/" + ctx.IssueId, nil)
+	issue, getErr := executeApiCall(ctx.Metadata, "/issue/"+issueId, nil, true)
 	if getErr != nil {
 		return false, getErr
 	}
 
-	currentIssueId := ctx.IssueId
+	currentIssueId := issueId
 	if ctx.ForceOnParent && issue.HasParent() {
 		currentIssueId = issue.GetParent().Key
 	}
@@ -26,52 +44,31 @@ func ApiCall(ctx configuration.Context) (bool, error){
 	apiOperation := checkUrl(ctx.ApiEndPoint, configuration.IssuePlaceholder, currentIssueId)
 
 	ctx.Metadata.HttpMethod = ctx.HttpMethod
-	// TODO: put apiCalDummy to not spam the REST api while other local features are being developed... remove after
-	_, err := apiCallDummy(ctx.Metadata, apiOperation, ctx.Body)
+	_, err := executeApiCall(ctx.Metadata, apiOperation, ctx.Body, true)
 
 	return err == nil, err
 }
 
-func Get(apiOperation string, id string, md configuration.Metadata) (bool, *domain.Issue) {
-	//apiOperation = checkUrl(apiOperation, id)
+func multipleApiCall(ctx configuration.Context) (bool, error) {
+	allOk := true
+	for idx, i := range ctx.IssueIds {
+		ok, err := singleApiCall(ctx, i)
 
-	md.HttpMethod = http.MethodGet
-	issue, err := apiCall(md, apiOperation, nil)
-	if issue == nil || err != nil {
-		return false, nil
+		if err != nil {
+			allOk = false
+
+			fmt.Printf("API call #%d failed with reason %v", idx, err)
+			if !*ctx.Metadata.ResourceFlags.ForceFinish {
+				return ok, err
+			}
+		}
 	}
 
-	return true, issue
-}
-
-func Post(apiOperation string, id string, md configuration.Metadata, data map[string]string) bool {
-	//apiOperation = checkUrl(apiOperation, id)
-
-	md.HttpMethod = http.MethodPost
-	body := buildJsonBodyFromMap(data)
-	issue, err := apiCall(md, apiOperation, body)
-	if issue == nil || err != nil {
-		return false
+	if !allOk {
+		return false, errors.New("one or more API call failed")
 	}
 
-	return true
-}
-
-func buildJsonBodyFromMap(data map[string]string) []byte {
-	var buffer bytes.Buffer
-	buffer.WriteString("{")
-	for key, val := range data {
-		buffer.WriteString("\"" + key + "\"")
-		buffer.WriteString(":")
-		buffer.WriteString("\"" + val + "\",")
-	}
-
-	stringBuffer := strings.TrimRight(buffer.String(), ",")
-	buffer = *bytes.NewBufferString(stringBuffer)
-
-	buffer.WriteString("}")
-
-	return buffer.Bytes()
+	return true, nil
 }
 
 func checkUrl(url string, findValue, replaceValue string) string {
@@ -86,7 +83,7 @@ func apiCallDummy(md configuration.Metadata, op string, body []byte) (*domain.Is
 	return nil, nil
 }
 
-func apiCall(md configuration.Metadata, op string, body []byte) (*domain.Issue, error) {
+func executeApiCall(md configuration.Metadata, op string, body []byte, needDomainObject bool) (*domain.Issue, error) {
 	client := http.DefaultClient
 
 	baseUrl := md.AuthenticatedUrl()
@@ -116,26 +113,50 @@ func apiCall(md configuration.Metadata, op string, body []byte) (*domain.Issue, 
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	resp, respErr := client.Do(req)
+	fmt.Println(op)
+	fmt.Println(string(body))
 
-	if respErr != nil {
-		errMsg := fmt.Sprintf("http request failed with error %s", respErr)
-		return nil, errors.New(errMsg)
-	}
+	resp, respErr := client.Do(req)
 
 	defer resp.Body.Close()
 
-	var issue domain.Issue
+	status := 0
+	buffer := new (bytes.Buffer)
+	if resp != nil {
+		_, readBodyErr := buffer.ReadFrom(resp.Body)
 
-	if decodeErr := json.NewDecoder(resp.Body).Decode(&issue); decodeErr != nil {
-		errMsg := fmt.Sprintf("http request failed with error %s", decodeErr)
+		if readBodyErr == nil {
+			fmt.Println("BODY:")
+			fmt.Println(buffer.String())
+		}
+
+		status = resp.StatusCode
+	}
+
+	if status < http.StatusOK || status > 299 {
+		errMsg := fmt.Sprintf("http request failed (HTTP %d)", status)
 		return nil, errors.New(errMsg)
 	}
 
-	if issue.Id == "" {
-		errMsg := fmt.Sprintf("Issue doesn't exists")
+	if respErr != nil {
+		errMsg := fmt.Sprintf("http request failed (HTTP %d) with error %s", status, respErr)
 		return nil, errors.New(errMsg)
 	}
 
-	return &issue, nil
+	if needDomainObject && md.HttpMethod == http.MethodGet {
+		var issue domain.Issue
+
+		if decodeErr := json.Unmarshal(buffer.Bytes(), &issue); decodeErr != nil {
+			errMsg := fmt.Sprintf("decoding of json object failed with error %s", decodeErr)
+			return nil, errors.New(errMsg)
+		}
+
+		if issue.Id == "" {
+			errMsg := fmt.Sprintf("Issue doesn't exists")
+			return nil, errors.New(errMsg)
+		}
+		return &issue, nil
+	}
+
+	return nil, nil
 }
