@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+exec 3>&1 # make stdout available as fd3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+
+# for jq
+PATH=/usr/local/bin/:$PATH
+
+export TMPDIR=${TMPDIR:-/tmp}
+
+payload=$(mktemp $TMPDIR/jira-api-resource.XXXXXX)
+
+cat > $payload <&0
+
