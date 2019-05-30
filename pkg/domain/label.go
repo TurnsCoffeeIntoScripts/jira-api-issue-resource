@@ -1,5 +1,5 @@
 package domain
 
 type JiraLabel struct {
-	Name string
+	AddedName string `json:"add"`
 }

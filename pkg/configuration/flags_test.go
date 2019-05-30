@@ -9,6 +9,7 @@ var dummyUrl = "URL"
 var dummyUsername = "USER"
 var dummyPassword = "PASSWORD"
 var dummyIssue = "ISSUE-1234"
+var dummyIssueList = "ISSUE-1234,ISSUE-5678"
 
 var data = JiraApiResourceFlags{}
 
@@ -22,7 +23,6 @@ func TestValidateBaseFlags_Success(t *testing.T) {
 	*data.JiraApiUrl = dummyUrl
 	*data.Username = dummyUsername
 	*data.Password = dummyPassword
-	*data.IssueId = dummyIssue
 
 	ok := data.ValidateBaseFlags()
 	resetData()
@@ -35,7 +35,6 @@ func TestValidateBaseFlags_Success(t *testing.T) {
 func TestValidateBaseFlags_FailureURL(t *testing.T) {
 	*data.Username = dummyUsername
 	*data.Password = dummyPassword
-	*data.IssueId = dummyIssue
 
 	ok := data.ValidateBaseFlags()
 	resetData()
@@ -48,7 +47,6 @@ func TestValidateBaseFlags_FailureURL(t *testing.T) {
 func TestValidateBaseFlags_FailureUsername(t *testing.T) {
 	*data.JiraApiUrl = dummyUrl
 	*data.Password = dummyPassword
-	*data.IssueId = dummyIssue
 
 	ok := data.ValidateBaseFlags()
 	resetData()
@@ -61,7 +59,6 @@ func TestValidateBaseFlags_FailureUsername(t *testing.T) {
 func TestValidateBaseFlags_FailurePassword(t *testing.T) {
 	*data.JiraApiUrl = dummyUrl
 	*data.Username = dummyUsername
-	*data.IssueId = dummyIssue
 
 	ok := data.ValidateBaseFlags()
 	resetData()
@@ -71,18 +68,7 @@ func TestValidateBaseFlags_FailurePassword(t *testing.T) {
 	}
 }
 
-func TestValidateBaseFlags_FailureIssue(t *testing.T) {
-	*data.JiraApiUrl = dummyUrl
-	*data.Username = dummyUsername
-	*data.Password = dummyPassword
-
-	ok := data.ValidateBaseFlags()
-	resetData()
-
-	if ok {
-		t.Errorf("JiraApiResourceFlags validation should not have been successful but was. (Expected: %t, got: %t)", false, ok)
-	}
-}
+// TODO test single, multiple, zero
 
 func resetData() {
 	*data.ShowHelp = false
@@ -91,5 +77,6 @@ func resetData() {
 	*data.Username = ""
 	*data.Password = ""
 	*data.IssueId = ""
+	*data.RawIssueList = ""
 	*data.Body = ""
 }

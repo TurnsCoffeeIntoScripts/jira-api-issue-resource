@@ -118,18 +118,36 @@ func executeApiCall(md configuration.Metadata, op string, body []byte, needDomai
 
 	resp, respErr := client.Do(req)
 
+	defer resp.Body.Close()
+
+	status := 0
+	buffer := new (bytes.Buffer)
+	if resp != nil {
+		_, readBodyErr := buffer.ReadFrom(resp.Body)
+
+		if readBodyErr == nil {
+			fmt.Println("BODY:")
+			fmt.Println(buffer.String())
+		}
+
+		status = resp.StatusCode
+	}
+
+	if status < http.StatusOK || status > 299 {
+		errMsg := fmt.Sprintf("http request failed (HTTP %d)", status)
+		return nil, errors.New(errMsg)
+	}
+
 	if respErr != nil {
-		errMsg := fmt.Sprintf("http request failed with error %s", respErr)
+		errMsg := fmt.Sprintf("http request failed (HTTP %d) with error %s", status, respErr)
 		return nil, errors.New(errMsg)
 	}
 
 	if needDomainObject && md.HttpMethod == http.MethodGet {
-		defer resp.Body.Close()
-
 		var issue domain.Issue
 
-		if decodeErr := json.NewDecoder(resp.Body).Decode(&issue); decodeErr != nil {
-			errMsg := fmt.Sprintf("http request failed with error %s", decodeErr)
+		if decodeErr := json.Unmarshal(buffer.Bytes(), &issue); decodeErr != nil {
+			errMsg := fmt.Sprintf("decoding of json object failed with error %s", decodeErr)
 			return nil, errors.New(errMsg)
 		}
 

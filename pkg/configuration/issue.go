@@ -11,18 +11,16 @@ func SetContextAddLabel(ctx *Context) *Context {
 	ctx.ApiEndPoint = "issue/" + IssuePlaceholder
 	ctx.HttpMethod = http.MethodPut
 
-	issue := domain.AddLabelIssue{}
-	issueFields := domain.AddLabelIssueFields{}
-	fields := domain.FieldsLabelOnly{}
+	updatedIssue := domain.UpdatedIssueAddedLabels{}
+	addedLabels := domain.AddedLabels{}
 	labels := make([]domain.JiraLabel, 1)
-	label := domain.JiraLabel{Name: *ctx.Metadata.ResourceFlags.Label}
+	label := domain.JiraLabel{AddedName: *ctx.Metadata.ResourceFlags.Label}
 
 	labels[0] = label
-	fields.Labels = labels
-	issueFields.Fields = fields
-	issue.Update = issueFields
+	addedLabels.Labels = labels
+	updatedIssue.AddedLabels = addedLabels
 
-	out, err := json.Marshal(issue)
+	out, err := json.Marshal(updatedIssue)
 	if err != nil {
 		fmt.Println("Error marshalling to JSON: ", err)
 		return nil

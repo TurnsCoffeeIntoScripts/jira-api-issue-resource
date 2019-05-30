@@ -14,14 +14,10 @@ func (i *Issue) GetParent() *Issue {
 	return i.Fields.Parent
 }
 
-type AddLabelIssue struct {
-	Update AddLabelIssueFields `json:"update"`
+type UpdatedIssueAddedLabels struct {
+	AddedLabels AddedLabels `json:"update"`
 }
 
-type AddLabelIssueFields struct {
-	Fields FieldsLabelOnly `json:"fields"`
-}
-
-type FieldsLabelOnly struct {
+type AddedLabels struct {
 	Labels []JiraLabel `json:"labels"`
 }
