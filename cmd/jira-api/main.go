@@ -10,9 +10,9 @@ import (
 
 func main() {
 	flags := configuration.JiraApiResourceFlags{}
-	flags.SetupFlags(true)
+	ok := flags.SetupFlags(true)
 
-	if *flags.ShowHelp {
+	if !ok || *flags.ShowHelp {
 		flag.Usage()
 		os.Exit(0)
 	} else {
@@ -22,6 +22,5 @@ func main() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
 	}
 }

@@ -84,7 +84,7 @@ func TestValidateBaseFlags_FailureIssue(t *testing.T) {
 	}
 }
 
-func resetData()  {
+func resetData() {
 	*data.ShowHelp = false
 	*data.JiraApiUrl = ""
 	*data.Protocol = ""

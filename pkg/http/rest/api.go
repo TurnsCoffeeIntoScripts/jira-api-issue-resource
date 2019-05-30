@@ -11,14 +11,23 @@ import (
 	"strings"
 )
 
-func ApiCall(ctx configuration.Context) (bool, error){
+func ApiCall(ctx configuration.Context) (bool, error) {
+	if ctx.Metadata.ResourceFlags.SingleIssue {
+		return singleApiCall(ctx, ctx.IssueIds[0])
+	} else {
+		return multipleApiCall(ctx)
+	}
+
+}
+
+func singleApiCall(ctx configuration.Context, issueId string) (bool, error) {
 	ctx.Metadata.HttpMethod = http.MethodGet
-	issue, getErr := apiCall(ctx.Metadata, "/issue/" + ctx.IssueId, nil)
+	issue, getErr := executeApiCall(ctx.Metadata, "/issue/"+issueId, nil)
 	if getErr != nil {
 		return false, getErr
 	}
 
-	currentIssueId := ctx.IssueId
+	currentIssueId := issueId
 	if ctx.ForceOnParent && issue.HasParent() {
 		currentIssueId = issue.GetParent().Key
 	}
@@ -26,52 +35,31 @@ func ApiCall(ctx configuration.Context) (bool, error){
 	apiOperation := checkUrl(ctx.ApiEndPoint, configuration.IssuePlaceholder, currentIssueId)
 
 	ctx.Metadata.HttpMethod = ctx.HttpMethod
-	// TODO: put apiCalDummy to not spam the REST api while other local features are being developed... remove after
-	_, err := apiCallDummy(ctx.Metadata, apiOperation, ctx.Body)
+	_, err := executeApiCall(ctx.Metadata, apiOperation, ctx.Body)
 
 	return err == nil, err
 }
 
-func Get(apiOperation string, id string, md configuration.Metadata) (bool, *domain.Issue) {
-	//apiOperation = checkUrl(apiOperation, id)
+func multipleApiCall(ctx configuration.Context) (bool, error) {
+	allOk := true
+	for idx, i := range ctx.IssueIds {
+		ok, err := singleApiCall(ctx, i)
 
-	md.HttpMethod = http.MethodGet
-	issue, err := apiCall(md, apiOperation, nil)
-	if issue == nil || err != nil {
-		return false, nil
+		if err != nil {
+			allOk = false
+
+			fmt.Printf("API call #%d failed with reason %v", idx, err)
+			if !*ctx.Metadata.ResourceFlags.ForceFinish {
+				return ok, err
+			}
+		}
 	}
 
-	return true, issue
-}
-
-func Post(apiOperation string, id string, md configuration.Metadata, data map[string]string) bool {
-	//apiOperation = checkUrl(apiOperation, id)
-
-	md.HttpMethod = http.MethodPost
-	body := buildJsonBodyFromMap(data)
-	issue, err := apiCall(md, apiOperation, body)
-	if issue == nil || err != nil {
-		return false
+	if !allOk {
+		return false, errors.New("one or more API call failed")
 	}
 
-	return true
-}
-
-func buildJsonBodyFromMap(data map[string]string) []byte {
-	var buffer bytes.Buffer
-	buffer.WriteString("{")
-	for key, val := range data {
-		buffer.WriteString("\"" + key + "\"")
-		buffer.WriteString(":")
-		buffer.WriteString("\"" + val + "\",")
-	}
-
-	stringBuffer := strings.TrimRight(buffer.String(), ",")
-	buffer = *bytes.NewBufferString(stringBuffer)
-
-	buffer.WriteString("}")
-
-	return buffer.Bytes()
+	return true, nil
 }
 
 func checkUrl(url string, findValue, replaceValue string) string {
@@ -86,7 +74,7 @@ func apiCallDummy(md configuration.Metadata, op string, body []byte) (*domain.Is
 	return nil, nil
 }
 
-func apiCall(md configuration.Metadata, op string, body []byte) (*domain.Issue, error) {
+func executeApiCall(md configuration.Metadata, op string, body []byte) (*domain.Issue, error) {
 	client := http.DefaultClient
 
 	baseUrl := md.AuthenticatedUrl()
