@@ -2,25 +2,27 @@ package configuration
 
 import (
 	"flag"
+	"fmt"
 )
 
 type JiraApiResourceConfiguration struct {
-	Parsed     bool
-	Valid      bool
-	Flags      JiraApiResourceFlags
-	Parameters JiraApiResourceParameters
+	Initialized bool
+	Parsed      bool
+	Valid       bool
+	Flags       JiraApiResourceFlags
+	Parameters  JiraApiResourceParameters
 }
 
 type JiraApiResourceParameters struct {
-	JiraApiUrl   *string
-	Protocol     *string
-	Username     *string
-	Password     *string
-	Body         *string
-	Label        *string
-	IssueId      *string
-	RawIssueList *string
-	IssueScript  *string
+	JiraApiUrl  *string
+	Protocol    *string
+	Username    *string
+	Password    *string
+	Body        *string
+	Label       *string
+	IssueId     *string
+	IssueList   *string
+	IssueScript *string
 }
 
 type JiraApiResourceFlags struct {
@@ -42,46 +44,44 @@ type JiraApiResourceContextFlags struct {
 	CtxAddLabel *bool
 }
 
-func (f *JiraApiResourceFlags) SetupFlags(parse bool) bool {
-	f.ShowHelp = flag.Bool("help", false, "")
-	f.JiraApiUrl = flag.String("url", "", "The base URL of the Jira Rest API to be used (without the http|https)")
-	f.Protocol = flag.String("protocol", "https", "The http protocol to be used (http|https)")
-	f.Username = flag.String("username", "", "Username used to establish a secure connection with the Jira Rest API")
-	f.Password = flag.String("password", "", "Password used by the username in the connection to the Jira Rest API")
-	f.Body = flag.String("body", "", "The body of content to set (description, comment, etc.")
-	f.Label = flag.String("label", "", "")
-	f.ForceOnParent = flag.Bool("force-on-parent", false, "")
-	f.ForceFinish = flag.Bool("force-finish", false, "Force jira-api-resource to execute every API call before exiting, even if a previous one failed")
+func (conf *JiraApiResourceConfiguration) SetupFlags() bool {
+	if !conf.Initialized {
+		// Setup context flags (JiraApiResourceContextFlags)
+		conf.Flags.ContextFlags.ShowHelp = flag.Bool("help", false, "")
+		conf.Flags.ContextFlags.CtxComment = flag.Bool("comment", false, "")
+		conf.Flags.ContextFlags.CtxAddLabel = flag.Bool("add-label", false, "")
 
-	// Issues
-	f.IssueId = flag.String("id", "", "The Jira ticket ID (Format: <PROJECT_KEY>-<NUMBER>")
-	f.RawIssueList = flag.String("ids", "", "")
-	f.IssueScript = flag.String("script", "", "")
+		// Setup aplication flags (JiraApiResourceApplicationFlags)
+		conf.Flags.ApplicationFlags.ForceOnParent = flag.Bool("force-on-parent", false, "")
+		conf.Flags.ApplicationFlags.ForceFinish = flag.Bool("force-finish", false, "Force jira-api-resource to execute every API call before exiting, even if a previous one failed")
+		// Application flags (JiraApiResourceApplicationFlags) that'll be initialized later
+		conf.Flags.ApplicationFlags.SingleIssue = false
+		conf.Flags.ApplicationFlags.MultipleIssue = false
+		conf.Flags.ApplicationFlags.ZeroIssue = false
 
-	// Context flags
-	f.CtxComment = flag.Bool("comment", false, "")
-	f.CtxAddLabel = flag.Bool("add-label", false, "")
+		// Setup parameters (JiraApiResourceParameters)
+		conf.Parameters.JiraApiUrl = flag.String("url", "", "The base URL of the Jira Rest API to be used (without the http|https)")
+		conf.Parameters.Protocol = flag.String("protocol", "https", "The http protocol to be used (http|https)")
+		conf.Parameters.Username = flag.String("username", "", "Username used to establish a secure connection with the Jira Rest API")
+		conf.Parameters.Password = flag.String("password", "", "Password used by the username in the connection to the Jira Rest API")
+		conf.Parameters.Body = flag.String("body", "", "The body of content to set (description, comment, etc.")
+		conf.Parameters.Label = flag.String("label", "", "")
+		conf.Parameters.IssueId = flag.String("issue-id", "", "")
+		conf.Parameters.IssueList = flag.String("issue-list", "", "")
+		conf.Parameters.IssueScript = flag.String("issue-script", "", "")
 
-	if parse {
-		flag.Parse()
-		return f.ValidateBaseFlags()
+		conf.Initialized = true
 	}
 
-	return true
-}
+	// Parse the flags according to the input parameters
+	flag.Parse()
 
-func (f *JiraApiResourceFlags) ValidateBaseFlags() bool {
-	if *f.JiraApiUrl == "" || *f.Username == "" || *f.Password == "" {
-		return false
+	// Validations
+	success, errList := conf.ValidateBaseParameters()
+
+	for err := range errList {
+		fmt.Println(err)
 	}
 
-	if *f.RawIssueList != "" {
-		f.MultipleIssue = true
-	} else if *f.IssueId != "" {
-		f.SingleIssue = true
-	} else {
-		f.ZeroIssue = true
-	}
-
-	return true
+	return success
 }

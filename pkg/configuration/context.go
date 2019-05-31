@@ -1,7 +1,5 @@
 package configuration
 
-import "strings"
-
 type Context struct {
 	IssueIds    []string
 	ApiEndPoint string
@@ -16,7 +14,7 @@ type Context struct {
 func (c *Context) Initialize(md Metadata) {
 	c.Metadata = md
 
-	if md.ResourceFlags.SingleIssue {
+	/*if md.ResourceFlags.SingleIssue {
 		c.IssueIds = append(c.IssueIds, *md.ResourceFlags.IssueId)
 	} else {
 		for _, issue := range strings.Split(*md.ResourceFlags.RawIssueList, ",") {
@@ -24,7 +22,7 @@ func (c *Context) Initialize(md Metadata) {
 		}
 	}
 
-	c.ForceOnParent = *md.ResourceFlags.ForceOnParent
+	c.ForceOnParent = *md.ResourceFlags.ForceOnParent*/
 }
 
 func GetExecutionContext(flags JiraApiResourceFlags) *Context {
@@ -34,11 +32,11 @@ func GetExecutionContext(flags JiraApiResourceFlags) *Context {
 	md.Initialize(flags)
 	ctx.Initialize(md)
 
-	if *flags.CtxComment {
+	/*if *flags.CtxComment {
 		ctx = SetContextComment(ctx)
 	} else if *flags.CtxAddLabel {
 		ctx = SetContextAddLabel(ctx)
-	}
+	}*/
 
 	return ctx
 }

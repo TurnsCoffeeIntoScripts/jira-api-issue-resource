@@ -12,13 +12,13 @@ import (
 )
 
 func ApiCall(ctx configuration.Context) (bool, error) {
-	if ctx.Metadata.ResourceFlags.ZeroIssue {
+	/*if ctx.Metadata.ResourceFlags.ZeroIssue {
 		return noIssueApiCall(ctx)
 	} else if ctx.Metadata.ResourceFlags.SingleIssue {
 		return singleApiCall(ctx, ctx.IssueIds[0])
-	} else {
+	} else {*/
 		return multipleApiCall(ctx)
-	}
+	//}
 
 }
 
@@ -52,15 +52,15 @@ func singleApiCall(ctx configuration.Context, issueId string) (bool, error) {
 func multipleApiCall(ctx configuration.Context) (bool, error) {
 	allOk := true
 	for idx, i := range ctx.IssueIds {
-		ok, err := singleApiCall(ctx, i)
+		_, err := singleApiCall(ctx, i)
 
 		if err != nil {
 			allOk = false
 
 			fmt.Printf("API call #%d failed with reason %v", idx, err)
-			if !*ctx.Metadata.ResourceFlags.ForceFinish {
+			/*if !*ctx.Metadata.ResourceFlags.ForceFinish {
 				return ok, err
-			}
+			}*/
 		}
 	}
 

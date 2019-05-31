@@ -12,7 +12,7 @@ GOTEST=$(GOCMD) test
 JIRA_API_PATH=cmd/jira-api/
 JIRA_API_BINARY=jiraApiResource
 
-all: build test
+all: clean build test
 
 build:
 	cd $(JIRA_API_PATH) && $(GOBUILD) -o $(JIRA_API_BINARY) -v
