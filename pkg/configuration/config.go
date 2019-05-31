@@ -4,27 +4,42 @@ import (
 	"flag"
 )
 
+type JiraApiResourceConfiguration struct {
+	Parsed     bool
+	Valid      bool
+	Flags      JiraApiResourceFlags
+	Parameters JiraApiResourceParameters
+}
+
+type JiraApiResourceParameters struct {
+	JiraApiUrl   *string
+	Protocol     *string
+	Username     *string
+	Password     *string
+	Body         *string
+	Label        *string
+	IssueId      *string
+	RawIssueList *string
+	IssueScript  *string
+}
+
 type JiraApiResourceFlags struct {
-	ShowHelp      *bool
-	JiraApiUrl    *string
-	Protocol      *string
-	Username      *string
-	Password      *string
-	IssueId       *string
-	RawIssueList  *string
-	Body          *string
-	Label         *string
+	ApplicationFlags JiraApiResourceApplicationFlags
+	ContextFlags     JiraApiResourceContextFlags
+}
+
+type JiraApiResourceApplicationFlags struct {
 	ForceOnParent *bool
 	ForceFinish   *bool
-
-	// Context flags
-	CtxComment  *bool
-	CtxAddLabel *bool
-
-	// Initialized flags (can't be set via any input flags)
 	SingleIssue   bool
 	MultipleIssue bool
 	ZeroIssue     bool
+}
+
+type JiraApiResourceContextFlags struct {
+	ShowHelp    *bool
+	CtxComment  *bool
+	CtxAddLabel *bool
 }
 
 func (f *JiraApiResourceFlags) SetupFlags(parse bool) bool {
@@ -33,12 +48,15 @@ func (f *JiraApiResourceFlags) SetupFlags(parse bool) bool {
 	f.Protocol = flag.String("protocol", "https", "The http protocol to be used (http|https)")
 	f.Username = flag.String("username", "", "Username used to establish a secure connection with the Jira Rest API")
 	f.Password = flag.String("password", "", "Password used by the username in the connection to the Jira Rest API")
-	f.IssueId = flag.String("id", "", "The Jira ticket ID (Format: <PROJECT_KEY>-<NUMBER>")
-	f.RawIssueList = flag.String("ids", "", "")
 	f.Body = flag.String("body", "", "The body of content to set (description, comment, etc.")
 	f.Label = flag.String("label", "", "")
 	f.ForceOnParent = flag.Bool("force-on-parent", false, "")
 	f.ForceFinish = flag.Bool("force-finish", false, "Force jira-api-resource to execute every API call before exiting, even if a previous one failed")
+
+	// Issues
+	f.IssueId = flag.String("id", "", "The Jira ticket ID (Format: <PROJECT_KEY>-<NUMBER>")
+	f.RawIssueList = flag.String("ids", "", "")
+	f.IssueScript = flag.String("script", "", "")
 
 	// Context flags
 	f.CtxComment = flag.Bool("comment", false, "")

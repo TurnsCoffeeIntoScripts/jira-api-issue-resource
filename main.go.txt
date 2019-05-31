@@ -1,0 +1,17 @@
+package main
+
+import (
+    "os/exec"
+    "os"
+    "log"
+)
+
+func main() {
+    cmd := exec.Command("bash", "test.sh")
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    err := cmd.Run()
+    if err != nil {
+        log.Fatalf("cmd.RUN() failed with %s\n", err)
+    }
+}
