@@ -7,7 +7,7 @@ func (conf *JiraAPIResourceConfiguration) ValidateBaseParameters() (bool, []erro
 	var ok bool
 	success := true
 
-	ok, errList = checkEmptyConfigElement(conf.Parameters.JiraApiUrl, "missing api URL", errList)
+	ok, errList = checkEmptyConfigElement(conf.Parameters.JiraAPIUrl, "missing api URL", errList)
 	success = success && ok
 
 	ok, errList = checkEmptyConfigElement(conf.Parameters.Username, "missing api username", errList)

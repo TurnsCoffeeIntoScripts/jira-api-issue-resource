@@ -15,7 +15,7 @@ func (c *Context) Initialize(md Metadata) {
 	c.Metadata = md
 
 	/*if md.ResourceFlags.SingleIssue {
-		c.IssueIds = append(c.IssueIds, *md.ResourceFlags.IssueId)
+		c.IssueIds = append(c.IssueIds, *md.ResourceFlags.IssueID)
 	} else {
 		for _, issue := range strings.Split(*md.ResourceFlags.RawIssueList, ",") {
 			c.IssueIds = append(c.IssueIds, issue)

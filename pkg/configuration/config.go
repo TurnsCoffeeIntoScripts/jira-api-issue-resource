@@ -18,13 +18,13 @@ type JiraAPIResourceConfiguration struct {
 }
 
 type JiraAPIResourceParameters struct {
-	JiraApiUrl  *string
+	JiraAPIUrl  *string
 	Protocol    *string
 	Username    *string
 	Password    *string
 	Body        *string
 	Label       *string
-	IssueId     *string
+	IssueID     *string
 	IssueList   *string
 	IssueScript *string
 }
@@ -64,13 +64,13 @@ func (conf *JiraAPIResourceConfiguration) SetupFlags() bool {
 		conf.Flags.ApplicationFlags.ZeroIssue = false
 
 		// Setup parameters (JiraAPIResourceParameters)
-		conf.Parameters.JiraApiUrl = flag.String("url", "", "The base URL of the Jira Rest API to be used (without the http|https)")
+		conf.Parameters.JiraAPIUrl = flag.String("url", "", "The base URL of the Jira Rest API to be used (without the http|https)")
 		conf.Parameters.Protocol = flag.String("protocol", "https", "The http protocol to be used (http|https)")
 		conf.Parameters.Username = flag.String("username", "", "Username used to establish a secure connection with the Jira Rest API")
 		conf.Parameters.Password = flag.String("password", "", "Password used by the username in the connection to the Jira Rest API")
 		conf.Parameters.Body = flag.String("body", "", "The body of content to set (description, comment, etc.")
 		conf.Parameters.Label = flag.String("label", "", "")
-		conf.Parameters.IssueId = flag.String("issue-id", "", "")
+		conf.Parameters.IssueID = flag.String("issue-id", "", "")
 		conf.Parameters.IssueList = flag.String("issue-list", "", "")
 		conf.Parameters.IssueScript = flag.String("issue-script", "", "")
 

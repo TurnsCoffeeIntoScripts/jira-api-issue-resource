@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// This test represents a successful validation of the JiraAPIResourceFlags instance, which means that the 'JiraApiUrl',
+// This test represents a successful validation of the JiraAPIResourceFlags instance, which means that the 'JiraAPIUrl',
 // 'Username' and 'Password' are all set. The others are optional.
 func TestValidateBaseFlags_Success(t *testing.T) {
 	*data.JiraApiUrl = dummyUrl
@@ -41,7 +41,7 @@ func TestValidateBaseFlags_Success(t *testing.T) {
 	}
 }
 
-// This test represents a failed validation of the JiraAPIResourceFlags instance. In this case, the 'JiraApiUrl' field
+// This test represents a failed validation of the JiraAPIResourceFlags instance. In this case, the 'JiraAPIUrl' field
 // was omitted.
 func TestValidateBaseFlags_FailureURL(t *testing.T) {
 	*data.Username = dummyUsername
@@ -94,7 +94,7 @@ func TestValidateBaseFlags_ZeroIssue(t *testing.T) {
 	zeroIssue := data.ZeroIssue
 
 	if !zeroIssue {
-		t.Errorf("JiraApiRessourceFlags with no 'IssueId' or 'RawIssueList' should have 'ZeroIssue' at true, instead it was %t", zeroIssue)
+		t.Errorf("JiraApiRessourceFlags with no 'IssueID' or 'RawIssueList' should have 'ZeroIssue' at true, instead it was %t", zeroIssue)
 	}
 }
 
@@ -110,7 +110,7 @@ func TestValidateBaseFlags_SingleIssue(t *testing.T) {
 	singleIssue := data.SingleIssue
 
 	if !singleIssue {
-		t.Errorf("JiraApiRessourceFlags with an 'IssueId' and no 'RawIssueList' should have 'SingleIssue' at true, instead it was %t", singleIssue)
+		t.Errorf("JiraApiRessourceFlags with an 'IssueID' and no 'RawIssueList' should have 'SingleIssue' at true, instead it was %t", singleIssue)
 	}
 }
 
@@ -126,7 +126,7 @@ func TestValidateBaseFlags_MultipleIssue(t *testing.T) {
 	multipleIssue := data.MultipleIssue
 
 	if !multipleIssue {
-		t.Errorf("JiraApiRessourceFlags with no 'IssueId' but a 'RawIssueList' should have 'MultipleIssue' at true, instead it was %t", multipleIssue)
+		t.Errorf("JiraApiRessourceFlags with no 'IssueID' but a 'RawIssueList' should have 'MultipleIssue' at true, instead it was %t", multipleIssue)
 	}
 }
 

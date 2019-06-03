@@ -14,7 +14,7 @@ func (m *Metadata) AuthenticatedUrl() string {
 }
 
 func (m *Metadata) Initialize(flags JiraAPIResourceFlags) {
-	/*m.Url = *flags.JiraApiUrl
+	/*m.Url = *flags.JiraAPIUrl
 	m.Protocol = *flags.Protocol
 	m.Username = *flags.Username
 	m.Password = *flags.Password*/
