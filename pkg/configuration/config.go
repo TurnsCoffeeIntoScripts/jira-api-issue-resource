@@ -5,6 +5,10 @@ import (
 	"fmt"
 )
 
+// JiraApiResourceConfiguration defines a container for both flags (true/false) and parameters.
+// The internal 'Initialized' flag is set to true when 'SetupFlags' is called for the first time
+// The internal 'Parsed' flag is set to true when 'flag.Parse()' is called for the first time
+// The internal 'Valid' flag returns whether or not the configuration is in a valid state
 type JiraApiResourceConfiguration struct {
 	Initialized bool
 	Parsed      bool
@@ -74,7 +78,10 @@ func (conf *JiraApiResourceConfiguration) SetupFlags() bool {
 	}
 
 	// Parse the flags according to the input parameters
-	flag.Parse()
+	if !conf.Parsed {
+		flag.Parse()
+		conf.Parsed = true
+	}
 
 	// Validations
 	success, errList := conf.ValidateBaseParameters()
