@@ -25,7 +25,7 @@ func (c *Context) Initialize(md Metadata) {
 	c.ForceOnParent = *md.ResourceFlags.ForceOnParent*/
 }
 
-func GetExecutionContext(flags JiraApiResourceFlags) *Context {
+func GetExecutionContext(flags JiraAPIResourceFlags) *Context {
 	ctx := &Context{}
 	md := Metadata{}
 

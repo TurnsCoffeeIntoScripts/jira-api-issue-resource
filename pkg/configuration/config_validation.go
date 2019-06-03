@@ -2,7 +2,7 @@ package configuration
 
 import "errors"
 
-func (conf *JiraApiResourceConfiguration) ValidateBaseParameters() (bool, []error) {
+func (conf *JiraAPIResourceConfiguration) ValidateBaseParameters() (bool, []error) {
 	var errList []error
 	var ok bool
 	success := true

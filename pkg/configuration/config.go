@@ -5,19 +5,19 @@ import (
 	"fmt"
 )
 
-// JiraApiResourceConfiguration defines a container for both flags (true/false) and parameters.
+// JiraAPIResourceConfiguration defines a container for both flags (true/false) and parameters.
 // The internal 'Initialized' flag is set to true when 'SetupFlags' is called for the first time
 // The internal 'Parsed' flag is set to true when 'flag.Parse()' is called for the first time
 // The internal 'Valid' flag returns whether or not the configuration is in a valid state
-type JiraApiResourceConfiguration struct {
+type JiraAPIResourceConfiguration struct {
 	Initialized bool
 	Parsed      bool
 	Valid       bool
-	Flags       JiraApiResourceFlags
-	Parameters  JiraApiResourceParameters
+	Flags       JiraAPIResourceFlags
+	Parameters  JiraAPIResourceParameters
 }
 
-type JiraApiResourceParameters struct {
+type JiraAPIResourceParameters struct {
 	JiraApiUrl  *string
 	Protocol    *string
 	Username    *string
@@ -29,12 +29,12 @@ type JiraApiResourceParameters struct {
 	IssueScript *string
 }
 
-type JiraApiResourceFlags struct {
-	ApplicationFlags JiraApiResourceApplicationFlags
-	ContextFlags     JiraApiResourceContextFlags
+type JiraAPIResourceFlags struct {
+	ApplicationFlags JiraAPIResourceApplicationFlags
+	ContextFlags     JiraAPIResourceContextFlags
 }
 
-type JiraApiResourceApplicationFlags struct {
+type JiraAPIResourceApplicationFlags struct {
 	ForceOnParent *bool
 	ForceFinish   *bool
 	SingleIssue   bool
@@ -42,28 +42,28 @@ type JiraApiResourceApplicationFlags struct {
 	ZeroIssue     bool
 }
 
-type JiraApiResourceContextFlags struct {
+type JiraAPIResourceContextFlags struct {
 	ShowHelp    *bool
 	CtxComment  *bool
 	CtxAddLabel *bool
 }
 
-func (conf *JiraApiResourceConfiguration) SetupFlags() bool {
+func (conf *JiraAPIResourceConfiguration) SetupFlags() bool {
 	if !conf.Initialized {
-		// Setup context flags (JiraApiResourceContextFlags)
+		// Setup context flags (JiraAPIResourceContextFlags)
 		conf.Flags.ContextFlags.ShowHelp = flag.Bool("help", false, "")
 		conf.Flags.ContextFlags.CtxComment = flag.Bool("comment", false, "")
 		conf.Flags.ContextFlags.CtxAddLabel = flag.Bool("add-label", false, "")
 
-		// Setup aplication flags (JiraApiResourceApplicationFlags)
+		// Setup aplication flags (JiraAPIResourceApplicationFlags)
 		conf.Flags.ApplicationFlags.ForceOnParent = flag.Bool("force-on-parent", false, "")
 		conf.Flags.ApplicationFlags.ForceFinish = flag.Bool("force-finish", false, "Force jira-api-resource to execute every API call before exiting, even if a previous one failed")
-		// Application flags (JiraApiResourceApplicationFlags) that'll be initialized later
+		// Application flags (JiraAPIResourceApplicationFlags) that'll be initialized later
 		conf.Flags.ApplicationFlags.SingleIssue = false
 		conf.Flags.ApplicationFlags.MultipleIssue = false
 		conf.Flags.ApplicationFlags.ZeroIssue = false
 
-		// Setup parameters (JiraApiResourceParameters)
+		// Setup parameters (JiraAPIResourceParameters)
 		conf.Parameters.JiraApiUrl = flag.String("url", "", "The base URL of the Jira Rest API to be used (without the http|https)")
 		conf.Parameters.Protocol = flag.String("protocol", "https", "The http protocol to be used (http|https)")
 		conf.Parameters.Username = flag.String("username", "", "Username used to establish a secure connection with the Jira Rest API")

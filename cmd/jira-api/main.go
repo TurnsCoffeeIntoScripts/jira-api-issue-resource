@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	flags := configuration.JiraApiResourceConfiguration{}
+	flags := configuration.JiraAPIResourceConfiguration{}
 	ok := flags.SetupFlags()
 
 	//if !ok || *flags.ShowHelp {
