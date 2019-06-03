@@ -17,7 +17,7 @@ func ApiCall(ctx configuration.Context) (bool, error) {
 	} else if ctx.Metadata.ResourceFlags.SingleIssue {
 		return singleApiCall(ctx, ctx.IssueIds[0])
 	} else {*/
-		return multipleApiCall(ctx)
+	return multipleApiCall(ctx)
 	//}
 
 }
@@ -121,7 +121,7 @@ func executeApiCall(md configuration.Metadata, op string, body []byte, needDomai
 	defer resp.Body.Close()
 
 	status := 0
-	buffer := new (bytes.Buffer)
+	buffer := new(bytes.Buffer)
 	if resp != nil {
 		_, readBodyErr := buffer.ReadFrom(resp.Body)
 

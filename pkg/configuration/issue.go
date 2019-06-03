@@ -29,4 +29,3 @@ func SetContextAddLabel(ctx *Context) *Context {
 	ctx.Body = out
 	return ctx
 }
-
