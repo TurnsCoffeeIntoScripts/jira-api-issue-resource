@@ -7,4 +7,5 @@ branches:
   only:
     - master
     - develop
+    - /^feature\/.*$/
     - /^v\d+\.\d+(\.\d+)?(-\S)?$/
