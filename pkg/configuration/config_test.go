@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	// Dummy data to be inserted in the JiraApiResourceFlags struct to test the validation. The value of the data
+	// Dummy data to be inserted in the JiraAPIResourceFlags struct to test the validation. The value of the data
 	// themselves aren't significant, it merely matters whether or not they're present.
 	dummyUrl       = "URL"
 	dummyUsername  = "USER"
@@ -15,8 +15,8 @@ var (
 	dummyIssueList = "ISSUE-1234,ISSUE-5678"
 )
 
-// Local instance of the type JiraApiResourceFlags, all test will be performed with this variable.
-var data = JiraApiResourceFlags{}
+// Local instance of the type JiraAPIResourceFlags, all test will be performed with this variable.
+var data = JiraAPIResourceFlags{}
 
 // The 'TestMain' method is used, so it's made possible to set up our flags, including the parsing operation of the
 // 'flag' package.
@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// This test represents a successful validation of the JiraApiResourceFlags instance, which means that the 'JiraApiUrl',
+// This test represents a successful validation of the JiraAPIResourceFlags instance, which means that the 'JiraAPIUrl',
 // 'Username' and 'Password' are all set. The others are optional.
 func TestValidateBaseFlags_Success(t *testing.T) {
 	*data.JiraApiUrl = dummyUrl
@@ -37,11 +37,11 @@ func TestValidateBaseFlags_Success(t *testing.T) {
 	resetData()
 
 	if !ok {
-		t.Errorf("JiraApiResourceFlags validation should have been successful but was not. (Expected: %t, got: %t)", true, ok)
+		t.Errorf("JiraAPIResourceFlags validation should have been successful but was not. (Expected: %t, got: %t)", true, ok)
 	}
 }
 
-// This test represents a failed validation of the JiraApiResourceFlags instance. In this case, the 'JiraApiUrl' field
+// This test represents a failed validation of the JiraAPIResourceFlags instance. In this case, the 'JiraAPIUrl' field
 // was omitted.
 func TestValidateBaseFlags_FailureURL(t *testing.T) {
 	*data.Username = dummyUsername
@@ -51,11 +51,11 @@ func TestValidateBaseFlags_FailureURL(t *testing.T) {
 	resetData()
 
 	if ok {
-		t.Errorf("JiraApiResourceFlags validation should not have been successful but was. (Expected: %t, got: %t)", false, ok)
+		t.Errorf("JiraAPIResourceFlags validation should not have been successful but was. (Expected: %t, got: %t)", false, ok)
 	}
 }
 
-// This test represents a failed validation of the JiraApiResourceFlags instance. In this case, the 'Username' field
+// This test represents a failed validation of the JiraAPIResourceFlags instance. In this case, the 'Username' field
 // was omitted.
 func TestValidateBaseFlags_FailureUsername(t *testing.T) {
 	*data.JiraApiUrl = dummyUrl
@@ -65,11 +65,11 @@ func TestValidateBaseFlags_FailureUsername(t *testing.T) {
 	resetData()
 
 	if ok {
-		t.Errorf("JiraApiResourceFlags validation should not have been successful but was. (Expected: %t, got: %t)", false, ok)
+		t.Errorf("JiraAPIResourceFlags validation should not have been successful but was. (Expected: %t, got: %t)", false, ok)
 	}
 }
 
-// This test represents a failed validation of the JiraApiResourceFlags instance. In this case, the 'Password' field
+// This test represents a failed validation of the JiraAPIResourceFlags instance. In this case, the 'Password' field
 // was omitted.
 func TestValidateBaseFlags_FailurePassword(t *testing.T) {
 	*data.JiraApiUrl = dummyUrl
@@ -79,7 +79,7 @@ func TestValidateBaseFlags_FailurePassword(t *testing.T) {
 	resetData()
 
 	if ok {
-		t.Errorf("JiraApiResourceFlags validation should not have been successful but was. (Expected: %t, got: %t)", false, ok)
+		t.Errorf("JiraAPIResourceFlags validation should not have been successful but was. (Expected: %t, got: %t)", false, ok)
 	}
 }
 
@@ -94,7 +94,7 @@ func TestValidateBaseFlags_ZeroIssue(t *testing.T) {
 	zeroIssue := data.ZeroIssue
 
 	if !zeroIssue {
-		t.Errorf("JiraApiRessourceFlags with no 'IssueId' or 'RawIssueList' should have 'ZeroIssue' at true, instead it was %t", zeroIssue)
+		t.Errorf("JiraApiRessourceFlags with no 'IssueID' or 'RawIssueList' should have 'ZeroIssue' at true, instead it was %t", zeroIssue)
 	}
 }
 
@@ -110,7 +110,7 @@ func TestValidateBaseFlags_SingleIssue(t *testing.T) {
 	singleIssue := data.SingleIssue
 
 	if !singleIssue {
-		t.Errorf("JiraApiRessourceFlags with an 'IssueId' and no 'RawIssueList' should have 'SingleIssue' at true, instead it was %t", singleIssue)
+		t.Errorf("JiraApiRessourceFlags with an 'IssueID' and no 'RawIssueList' should have 'SingleIssue' at true, instead it was %t", singleIssue)
 	}
 }
 
@@ -126,11 +126,11 @@ func TestValidateBaseFlags_MultipleIssue(t *testing.T) {
 	multipleIssue := data.MultipleIssue
 
 	if !multipleIssue {
-		t.Errorf("JiraApiRessourceFlags with no 'IssueId' but a 'RawIssueList' should have 'MultipleIssue' at true, instead it was %t", multipleIssue)
+		t.Errorf("JiraApiRessourceFlags with no 'IssueID' but a 'RawIssueList' should have 'MultipleIssue' at true, instead it was %t", multipleIssue)
 	}
 }
 
-// Local method that resets the JiraApiResourceFlags fields to their respective zero value.
+// Local method that resets the JiraAPIResourceFlags fields to their respective zero value.
 func resetData() {
 	*data.ShowHelp = false
 	*data.JiraApiUrl = ""

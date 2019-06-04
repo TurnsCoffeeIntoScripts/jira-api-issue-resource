@@ -9,14 +9,20 @@ import (
 )
 
 func main() {
-	flags := configuration.JiraApiResourceFlags{}
-	ok := flags.SetupFlags(true)
+	conf := configuration.JiraAPIResourceConfiguration{}
+	ok := conf.SetupFlags()
 
-	if !ok || *flags.ShowHelp {
+	if *conf.Flags.ContextFlags.ShowHelp.Value {
 		flag.Usage()
 		os.Exit(0)
+	} else if !ok {
+		for i, err := range conf.Errors {
+			fmt.Printf("Error [%d] --> %v\n", i, err)
+		}
+		flag.Usage()
+		os.Exit(-1)
 	} else {
-		ctx := configuration.GetExecutionContext(flags)
+		ctx := configuration.GetExecutionContext(conf)
 		if ctx != nil {
 			ok, err := rest.ApiCall(*ctx)
 
