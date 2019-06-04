@@ -2,17 +2,18 @@ package configuration
 
 import (
 	"flag"
-	"fmt"
 )
 
 // JiraAPIResourceConfiguration defines a container for both flags (true/false) and parameters.
 // The internal 'Initialized' flag is set to true when 'SetupFlags' is called for the first time
 // The internal 'Parsed' flag is set to true when 'flag.Parse()' is called for the first time
 // The internal 'Valid' flag returns whether or not the configuration is in a valid state
+// The internal 'Errors' slice contains all error recorded during the validation process
 type JiraAPIResourceConfiguration struct {
 	Initialized bool
 	Parsed      bool
 	Valid       bool
+	Errors      []error
 	Flags       JiraAPIResourceFlags
 	Parameters  JiraAPIResourceParameters
 }
@@ -43,22 +44,30 @@ type JiraAPIResourceApplicationFlags struct {
 }
 
 type JiraAPIResourceContextFlags struct {
-	ShowHelp    *bool
-	CtxComment  *bool
-	CtxAddLabel *bool
+	ShowHelp    JiraAPIResourceContextFlagDefinition
+	CtxComment  JiraAPIResourceContextFlagDefinition
+	CtxAddLabel JiraAPIResourceContextFlagDefinition
+}
+
+type JiraAPIResourceContextFlagDefinition struct {
+	Value *bool
+	Func  string
 }
 
 func (conf *JiraAPIResourceConfiguration) SetupFlags() bool {
 	if !conf.Initialized {
 		// Setup context flags (JiraAPIResourceContextFlags)
-		conf.Flags.ContextFlags.ShowHelp = flag.Bool("help", false, "")
-		conf.Flags.ContextFlags.CtxComment = flag.Bool("comment", false, "")
-		conf.Flags.ContextFlags.CtxAddLabel = flag.Bool("add-label", false, "")
+		conf.Flags.ContextFlags.ShowHelp.Value = flag.Bool("help", false, "")
+		conf.Flags.ContextFlags.ShowHelp.Func = "ValidateShowHelpContext"
+		conf.Flags.ContextFlags.CtxComment.Value = flag.Bool("comment", false, "")
+		conf.Flags.ContextFlags.CtxComment.Func = "ValidateCommentContext"
+		conf.Flags.ContextFlags.CtxAddLabel.Value = flag.Bool("add-label", false, "")
+		conf.Flags.ContextFlags.CtxAddLabel.Func = "ValidateAddLabelContext"
 
 		// Setup aplication flags (JiraAPIResourceApplicationFlags)
 		conf.Flags.ApplicationFlags.ForceOnParent = flag.Bool("force-on-parent", false, "")
 		conf.Flags.ApplicationFlags.ForceFinish = flag.Bool("force-finish", false, "Force jira-api-resource to execute every API call before exiting, even if a previous one failed")
-		// Application flags (JiraAPIResourceApplicationFlags) that'll be initialized later
+		// Application flags (JiraAPIResourceApplicationFlags) that'll be initialized later (during context validation)
 		conf.Flags.ApplicationFlags.SingleIssue = false
 		conf.Flags.ApplicationFlags.MultipleIssue = false
 		conf.Flags.ApplicationFlags.ZeroIssue = false
@@ -83,12 +92,13 @@ func (conf *JiraAPIResourceConfiguration) SetupFlags() bool {
 		conf.Parsed = true
 	}
 
+	// Setup of the other application flags
+	conf.Flags.ApplicationFlags.SingleIssue = *conf.Parameters.IssueID != ""
+	conf.Flags.ApplicationFlags.MultipleIssue = *conf.Parameters.IssueList != ""
+
 	// Validations
-	success, errList := conf.ValidateBaseParameters()
+	successBaseParameters := conf.ValidateBaseParameters()
+	successContextParameters := conf.ValidateContextParameters()
 
-	for err := range errList {
-		fmt.Println(err)
-	}
-
-	return success
+	return successBaseParameters && successContextParameters
 }

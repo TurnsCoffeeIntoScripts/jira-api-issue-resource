@@ -1,5 +1,7 @@
 package configuration
 
+import "strings"
+
 type Context struct {
 	IssueIds    []string
 	ApiEndPoint string
@@ -14,29 +16,29 @@ type Context struct {
 func (c *Context) Initialize(md Metadata) {
 	c.Metadata = md
 
-	/*if md.ResourceFlags.SingleIssue {
-		c.IssueIds = append(c.IssueIds, *md.ResourceFlags.IssueID)
-	} else {
-		for _, issue := range strings.Split(*md.ResourceFlags.RawIssueList, ",") {
+	if md.ResourceConfiguration.Flags.ApplicationFlags.SingleIssue {
+		c.IssueIds = append(c.IssueIds, *md.ResourceConfiguration.Parameters.IssueID)
+	} else if md.ResourceConfiguration.Flags.ApplicationFlags.MultipleIssue {
+		for _, issue := range strings.Split(*md.ResourceConfiguration.Parameters.IssueList, ",") {
 			c.IssueIds = append(c.IssueIds, issue)
 		}
 	}
 
-	c.ForceOnParent = *md.ResourceFlags.ForceOnParent*/
+	c.ForceOnParent = *md.ResourceConfiguration.Flags.ApplicationFlags.ForceOnParent
 }
 
-func GetExecutionContext(flags JiraAPIResourceFlags) *Context {
+func GetExecutionContext(conf JiraAPIResourceConfiguration) *Context {
 	ctx := &Context{}
 	md := Metadata{}
 
-	md.Initialize(flags)
+	md.Initialize(conf)
 	ctx.Initialize(md)
 
-	/*if *flags.CtxComment {
+	if *conf.Flags.ContextFlags.CtxComment.Value {
 		ctx = SetContextComment(ctx)
-	} else if *flags.CtxAddLabel {
+	} else if *conf.Flags.ContextFlags.CtxAddLabel.Value {
 		ctx = SetContextAddLabel(ctx)
-	}*/
+	}
 
 	return ctx
 }

@@ -23,7 +23,7 @@ all: fmt $(BIN) ; $(info $(M) building executable...) @ ## Build program binary
 		-o $(BIN)/$(PACKAGE) cmd/jira-api/main.go
 
 .PHONY: full
-full: fmt lint $(BIN) ; $(info $(M) building executable...) @ ## Build program binary
+full: fmt lint $(BIN) ; $(info $(M) building executable...) @ ## Build program binary (with go lint)
 	$Q $(GO) build \
 		-tags release \
 		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
@@ -120,9 +120,13 @@ version: ; $(info $(M) version...)	@ ## Prints current version
 
 .PHONY: run
 run: all ; $(info $(M) running $(PACKAGE)...) @ ## Run the latest build
-	cd $(BIN) && ./$(PACKAGE)
+	@echo $(PACKAGE) needs arguments
+	cd $(BIN) && ./$(PACKAGE) --help
+
+%:
+	@:
 
 .PHONY: help
 help:
 	@grep -E '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

@@ -12,13 +12,17 @@ import (
 )
 
 func ApiCall(ctx configuration.Context) (bool, error) {
-	/*if ctx.Metadata.ResourceFlags.ZeroIssue {
+	if ctx.Metadata.ResourceConfiguration.Flags.ApplicationFlags.ZeroIssue {
 		return noIssueApiCall(ctx)
-	} else if ctx.Metadata.ResourceFlags.SingleIssue {
+	} else if ctx.Metadata.ResourceConfiguration.Flags.ApplicationFlags.SingleIssue {
 		return singleApiCall(ctx, ctx.IssueIds[0])
-	} else {*/
-	return multipleApiCall(ctx)
-	//}
+	} else if ctx.Metadata.ResourceConfiguration.Flags.ApplicationFlags.MultipleIssue {
+		return multipleApiCall(ctx)
+	} else {
+		// TODO script?
+	}
+
+	return true, nil
 
 }
 
@@ -31,7 +35,7 @@ func noIssueApiCall(ctx configuration.Context) (bool, error) {
 
 func singleApiCall(ctx configuration.Context, issueId string) (bool, error) {
 	ctx.Metadata.HttpMethod = http.MethodGet
-	issue, getErr := executeApiCall(ctx.Metadata, "/issue/"+issueId, nil, true)
+	issue, getErr := executeApiCall(ctx.Metadata, "issue/"+issueId, nil, true)
 	if getErr != nil {
 		return false, getErr
 	}

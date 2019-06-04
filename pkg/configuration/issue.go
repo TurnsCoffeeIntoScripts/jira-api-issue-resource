@@ -14,9 +14,9 @@ func SetContextAddLabel(ctx *Context) *Context {
 	updatedIssue := domain.UpdatedIssueAddedLabels{}
 	addedLabels := domain.AddedLabels{}
 	labels := make([]domain.JiraLabel, 1)
-	//label := domain.JiraLabel{AddedName: *ctx.Metadata.ResourceFlags.Label}
+	label := domain.JiraLabel{AddedName: *ctx.Metadata.ResourceConfiguration.Parameters.Label}
 
-	//labels[0] = label
+	labels[0] = label
 	addedLabels.Labels = labels
 	updatedIssue.AddedLabels = addedLabels
 
