@@ -1,5 +1,5 @@
 #FROM golang:alpine AS builder
-FROM ubuntu:18.04
+FROM ubuntu:18.04 AS builder
 
 ENV CGO_ENABLED 0
 ENV GOOS linux
@@ -23,7 +23,7 @@ RUN apk --no-cache add \
         bash \
 ;
 
-COPY --from=builder bin/jiraApiResource /usr/local/bin/
+COPY --from=builder /app/bin/jiraApiResource /usr/local/bin/
 COPY resources/ /opt/resource
 
 FROM resource
