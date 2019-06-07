@@ -1,16 +1,15 @@
 # jira-api-resource  
 
-| Branch    | Build status | Scrutinizer |
-|-----------|--------------|-------------|
-| `master`  | [![Build Status](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-resource.svg?branch=master)](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-resource) | [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/TurnsCoffeeIntoScripts/jira-api-resource/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/TurnsCoffeeIntoScripts/jira-api-resource/?branch=master) |
-| `develop` | [![Build Status](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-resource.svg?branch=develop)](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-resource) | [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/TurnsCoffeeIntoScripts/jira-api-resource/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/TurnsCoffeeIntoScripts/jira-api-resource/?branch=develop) |
+| Version       | Build status | Scrutinizer |
+|---------------|--------------|-------------|
+| `0.0.1-rc.3`  | [![Build Status](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-resource.svg?branch=master)](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-resource) | [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/TurnsCoffeeIntoScripts/jira-api-resource/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/TurnsCoffeeIntoScripts/jira-api-resource/?branch=master) |
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e6ea2afc744d4fbf8bffc65e794155f4)](https://www.codacy.com/app/TurnsCoffeeIntoScripts/jira-api-resource?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=TurnsCoffeeIntoScripts/jira-api-resource&amp;utm_campaign=Badge_Grade)   
 <sub>Project certification on default branch (master)</sub>
 
 ***This ressource is still under construction. There is no stable release yet. Use at your own risk.***
 
-This [Concourse](https://concourse-ci.org/) resource allows a pipeline to interface with a Jira REST API in order to manager (create/update/delete) tickets.
+This [Concourse](https://concourse-ci.org/) resource allows a pipeline to interface with a Jira REST API in order to manage (create/update/delete) tickets.
 
 # Table of content
 1. [Resource Type Configuration](#Resource-Type-Configuration)
@@ -25,7 +24,7 @@ resource_types:
     - name: jira-api-resource
       type: docker-image
       source:
-          repository: ... 
+          repository: turnscoffeeintoscripts/jira-api-resource
           tag: latest
 ```
 
@@ -33,28 +32,77 @@ resource_types:
 ``` yml
 resources:
     - name: jira
-      type: jira-resource
+      type: jira-api-resource
       source:
           url: https://...
           username: XXXX
           password: ((password-in-vault)
+          
+          # Use only one of the next three parameters
+          issue-id: ABC-123
+          issue-list: ABC-123,ABC-234,ABC-345
+          issue-script: /path/to/script/script.sh       
 ```
 
 Firstly, here's a list of all required parameters:
 
 ### Required Parameters Definition
-| Parameter  | Description                                                          |
-|------------|----------------------------------------------------------------------|
-| `url`      | The URL of the JIRA rest API to be used                              |
-| `user`     | The username of the account used to connect with the Jira rest API   |
-| `password` | The password of the specified user                                   |
+| Parameter      | Description                                                                       |
+|----------------|-----------------------------------------------------------------------------------|
+| `url`          | The URL of the JIRA rest API to be used                                           |
+| `user`         | The username of the account used to connect with the Jira rest API                |
+| `password`     | The password of the specified user                                                |
+| `issue-id`     | The unique identifier of the Jira issue                                           |
+| `issue-list`   | A list of all the Jira issue's unique identifier                                  |
+| `issue-script` | Filename containing a script that must returns a single or multiple Jira issue(s) |
 
 ### Action Parameters Definition
-Now to specify the action to take specify one and only one of the actions listed bellow:
+Now to specify the action to take specify (set to 'true') one and only one of the actions listed bellow:
 
-#### Add Comment
-The configuration to use for add a comment to the specified ticket is `add-comment`.
+| Action (flags)     | Description               |
+|--------------------|---------------------------|
+| `comment`          | Add a comment on a ticket |
+| `add-label`        | Add a label on a ticket   |
+
+#### Comment
+The configuration to use to add a comment to the specified ticket(s) is `comment`.
 
 **Example**:
 ``` yml
+resources:
+    - name: jira
+      type: jira-api-resource
+      source:
+          url: https://...
+          username: XXXX
+          password: ((password-in-vault)
+          
+          # Use only one of the next three parameters
+          issue-list: ABC-123,ABC-234,ABC-345
+          
+          # The action to take on specified issue(s)
+          comment: true
+          body: This a comment made from a concourse resource
+```
+
+#### Add Label
+The configuration to use to add a label to the specified ticket(s) is `add-label`.
+
+**Example**:
+```yml
+resources:
+    - name: jira
+      type: jira-api-resource
+      source:
+          url: https://...
+          username: XXXX
+          password: ((password-in-vault)
+          
+          # Use only one of the next three parameters
+          issue-list: ABC-123,ABC-234,ABC-345
+          
+          # The action to take on specified issue(s)
+          add-label: true
+          label: LABEL_XYZ
+    
 ```
