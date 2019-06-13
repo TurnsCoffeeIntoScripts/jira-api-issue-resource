@@ -16,7 +16,13 @@ This [Concourse](https://concourse-ci.org/) resource allows a pipeline to interf
 2. [Source Configuration](#Source-Configuration)
     1. [Required Parameters Definition](#Required-Parameters-Definition)
     2. [Action Parameters Definition](#Action-Parameters-Definition)
-        1. [Add Comment](#Add-Comment)
+        1. [Add Comment](#Comment)
+        2. [Add Label](#Add-Label)
+    3. [Issue definition methods](#Issue-definition-methods)
+        1. [Single Issue](#Single-issue)
+        2. [List of issues](#List-of-issues)
+        3. [Custom Script](#Custom-script)
+3. [Behavior](#Behavior)
 
 ## Resource Type Configuration
 ``` yml
@@ -47,11 +53,17 @@ resources:
 Firstly, here's a list of all required parameters:
 
 ### Required Parameters Definition
+
 | Parameter      | Description                                                                       |
 |----------------|-----------------------------------------------------------------------------------|
 | `url`          | The URL of the JIRA rest API to be used                                           |
 | `user`         | The username of the account used to connect with the Jira rest API                |
 | `password`     | The password of the specified user                                                |
+
+Next, use **one and only one** of the following parameters.
+
+| Parameter      | Description                                                                       |
+|----------------|-----------------------------------------------------------------------------------|
 | `issue-id`     | The unique identifier of the Jira issue                                           |
 | `issue-list`   | A list of all the Jira issue's unique identifier                                  |
 | `issue-script` | Filename containing a script that must returns a single or multiple Jira issue(s) |
@@ -77,7 +89,6 @@ resources:
           username: XXXX
           password: ((password-in-vault)
           
-          # Use only one of the next three parameters
           issue-list: ABC-123,ABC-234,ABC-345
           
           # The action to take on specified issue(s)
@@ -98,7 +109,6 @@ resources:
           username: XXXX
           password: ((password-in-vault)
           
-          # Use only one of the next three parameters
           issue-list: ABC-123,ABC-234,ABC-345
           
           # The action to take on specified issue(s)
@@ -106,3 +116,11 @@ resources:
           label: LABEL_XYZ
     
 ```
+
+### Issue definition methods
+With this resource, there are 3 possible ways of defining which tickets will be accessed or modified.
+#### Single issue
+#### List of issues
+#### Custom Script
+
+## Behavior
