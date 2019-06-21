@@ -23,6 +23,9 @@ This [Concourse](https://concourse-ci.org/) resource allows a pipeline to interf
         2. [List of issues](#List-of-issues)
         3. [Custom Script](#Custom-script)
 3. [Behavior](#Behavior)
+    1. [Check](#Check)
+    2. [In](#In)
+    3. [Out](#Out)
 
 ## Resource Type Configuration
 ``` yml
@@ -119,8 +122,45 @@ resources:
 
 ### Issue definition methods
 With this resource, there are 3 possible ways of defining which tickets will be accessed or modified.
+
 #### Single issue
+A single issue is specified by adding the parameter `issue-id` in the source configuration and assigning the ticket number/id which will usually follow this format: `([a-zA-Z]+)-([0-9]+)`
+
 #### List of issues
+A list of issue is specified by adding the parameter `issue-list` in the source configuration and assigning one or multiple ticket numbers sperated by `','`.  
+The format for each ticket number will follow this format: `([a-zA-Z]+)-([0-9]+)`
+
+**Example:**
+``` yml
+    - name: jira
+      type: jira-api-resource
+      source:
+          url: https://...
+          username: XXXX
+          password: ((password-in-vault)
+          
+          issue-list: ABC-123,ABC-23,XYZ-9999
+```
+
 #### Custom Script
+Using this resource, it's also possible to specify a script instead of hard-coded values for the tickets numbers. The only requirement is that the script returns a comma-separated list of ticket numbers.
+
+**Example:**
+``` yml
+    - name: jira
+      type: jira-api-resource
+      source:
+          url: https://...
+          username: XXXX
+          password: ((password-in-vault)
+          
+          issue-script: moduleSCM/findJiraTicket.sh
+```
 
 ## Behavior
+### Check
+Coming soon...
+### In
+Coming soon...
+### Out
+Coming soon...
