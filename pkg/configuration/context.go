@@ -1,44 +1,31 @@
 package configuration
 
-import "strings"
+type Context int
 
-type Context struct {
-	IssueIds    []string
-	ApiEndPoint string
-	HttpMethod  string
-	Metadata    Metadata
-	Body        []byte
+const (
+	ReadIssue Context = iota
+	EditCustomField
+	Unknown
+)
 
-	// Context parametrization
-	ForceOnParent bool
+var names = [...]string{"ReadIssue", "EditCustomField", "Unknown"}
+
+func (c Context) String() string {
+
+	if c < ReadIssue || c >= Unknown {
+		return "Unknown"
+	}
+
+	return names[c]
+
 }
 
-func (c *Context) Initialize(md Metadata) {
-	c.Metadata = md
-
-	if md.ResourceConfiguration.Flags.ApplicationFlags.SingleIssue {
-		c.IssueIds = append(c.IssueIds, *md.ResourceConfiguration.Parameters.IssueID)
-	} else if md.ResourceConfiguration.Flags.ApplicationFlags.MultipleIssue {
-		for _, issue := range strings.Split(*md.ResourceConfiguration.Parameters.IssueList, ",") {
-			c.IssueIds = append(c.IssueIds, issue)
+func GetContext(contextString string) Context {
+	for index, name := range names {
+		if name == contextString {
+			return Context(index)
 		}
 	}
 
-	c.ForceOnParent = *md.ResourceConfiguration.Flags.ApplicationFlags.ForceOnParent
-}
-
-func GetExecutionContext(conf JiraAPIResourceConfiguration) *Context {
-	ctx := &Context{}
-	md := Metadata{}
-
-	md.Initialize(conf)
-	ctx.Initialize(md)
-
-	if *conf.Flags.ContextFlags.CtxComment.Value {
-		ctx = SetContextComment(ctx)
-	} else if *conf.Flags.ContextFlags.CtxAddLabel.Value {
-		ctx = SetContextAddLabel(ctx)
-	}
-
-	return ctx
+	return Unknown
 }

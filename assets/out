@@ -7,10 +7,32 @@ exec 1>&2 # redirect all output to stderr for logging
 
 # for jq
 PATH=/usr/local/bin/:$PATH
+TMPDIR=${TMPDIR:-/tmp}
 
-export TMPDIR=${TMPDIR:-/tmp}
+destination=${1}
 
-payload=$(mktemp $TMPDIR/jira-api-resource.XXXXXX)
+payload=$(mktemp $TMPDIR/jira-api-resource-request.XXXXXX)
 
 cat > $payload <&0
 
+# Reading source configuration
+url=$(jq -r '.source.url // ""' < ${payload})
+username=$(jq -r '.source.username // ""' < ${payload})
+password=$(jq -r '.source.password // ""' < ${payload})
+context=$(jq -r '.source.context // ""' < ${payload})
+customFieldName=$(jq -r '.source.custom_field_name // ""' < ${payload})
+
+# Reading params configuration
+issuesFile=$(jq -r '.params.file // ""' < ${payload})
+issues=$(<$issuesFile)
+customFieldValueFile=$(jq -r '.params.custom_field_value // ""' < ${payload})
+customFieldValue=$(<$customFieldValueFile)
+
+jiraApiResource \
+    --url=$url \
+    --username=$username \
+    --password=$password \
+    --context=$context \
+    --issues=$issues \
+    --customFieldName=$customFieldName \
+    --customFieldValue=$customFieldValue
