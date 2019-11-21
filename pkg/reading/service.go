@@ -41,7 +41,7 @@ func (s *ServiceReadIssue) CreateBody() []byte {
 	return nil
 }
 
-func (s *ServiceReadIssue) JsonObject() interface{} {
+func (s *ServiceReadIssue) JSONObject() interface{} {
 	return &Issue{}
 }
 

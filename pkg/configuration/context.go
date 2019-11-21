@@ -1,7 +1,13 @@
+// See parameters.go for this package's comment
 package configuration
 
+// Context is a simple integer to facilitate the handling of various context names via an enum-like strategy.
 type Context int
 
+/*
+This is an enum-like constant block to define every available context of execution. The flow is determined
+by the 'executeFromContext()' method from the 'application' package in the context.go file
+ */
 const (
 	ReadIssue Context = iota
 	EditCustomField
@@ -10,6 +16,7 @@ const (
 
 var names = [...]string{"ReadIssue", "EditCustomField", "Unknown"}
 
+// Returns the string value of the current Context
 func (c Context) String() string {
 
 	if c < ReadIssue || c >= Unknown {
@@ -20,6 +27,7 @@ func (c Context) String() string {
 
 }
 
+// This function is the implementation of the 'valueOf' mechanic of an enum-like construct
 func GetContext(contextString string) Context {
 	for index, name := range names {
 		if name == contextString {

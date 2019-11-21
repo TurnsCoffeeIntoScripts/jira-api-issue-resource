@@ -1,3 +1,7 @@
+// Package application provides the JiraAPIResourceApp struct which contains a placeholder for the
+// input parameters of the application. Methods are also provided to begin the initialization sequence
+// of the Go flags and some custom "meta" flags to determine the readiness and such.
+// TODO chaining/pipeline
 package application
 
 import (
@@ -6,12 +10,15 @@ import (
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/configuration"
 )
 
-type JiraApiResourceApp struct {
+// This struct represent a basic holder of the application parameters and context
+type JiraAPIResourceApp struct {
 	params configuration.JiraAPIResourceParameters
 }
 
+// Entry point of the application that is called from the main package.
+// The returned error, if any, is handled by the main
 func Run() error {
-	app := &JiraApiResourceApp{}
+	app := &JiraAPIResourceApp{}
 	if err := initFlagsAndParameters(app); err != nil {
 		return err
 	}
@@ -23,7 +30,7 @@ func Run() error {
 	return app.executeFromContext()
 }
 
-func initFlagsAndParameters(app *JiraApiResourceApp) error {
+func initFlagsAndParameters(app *JiraAPIResourceApp) error {
 	app.params = configuration.JiraAPIResourceParameters{}
 	app.params.Parse()
 	if !app.params.Meta.AllMandatoryValuesPresent() {
@@ -34,7 +41,7 @@ func initFlagsAndParameters(app *JiraApiResourceApp) error {
 	return nil
 }
 
-func configurationReady(app *JiraApiResourceApp) error {
+func configurationReady(app *JiraAPIResourceApp) error {
 	if !app.params.Meta.Ready() {
 		return errors.New("flags and parameters did not form a valid set")
 	}

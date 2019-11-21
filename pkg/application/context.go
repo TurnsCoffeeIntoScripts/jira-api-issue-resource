@@ -1,3 +1,4 @@
+// See application.go for this package's comment
 package application
 
 import (
@@ -8,7 +9,7 @@ import (
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/service"
 )
 
-func (app *JiraApiResourceApp) executeFromContext() error {
+func (app *JiraAPIResourceApp) executeFromContext() error {
 	var srv service.Service
 	var preSrv service.Service
 
@@ -26,15 +27,15 @@ func (app *JiraApiResourceApp) executeFromContext() error {
 
 	if srv == nil {
 		return errors.New("unable to determine inner service to execute from context")
-	} else {
-		if preSrv != nil {
-			if err := service.ExecuteService(preSrv, app.params); err != nil {
-				return err
-			}
+	}
 
-			srv.SetReadResults(preSrv.GetReadResults())
+	if preSrv != nil {
+		if err := service.ExecuteService(preSrv, app.params); err != nil {
+			return err
 		}
 
-		return service.ExecuteService(srv, app.params)
+		srv.SetReadResults(preSrv.GetReadResults())
 	}
+
+	return service.ExecuteService(srv, app.params)
 }

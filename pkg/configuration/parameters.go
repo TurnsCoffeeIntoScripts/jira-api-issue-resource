@@ -1,3 +1,20 @@
+/*
+Package configuration provides the structs that contains this application's Go flags
+and other custom parameters determined from the Go flags. Parsing of said flags is
+done via the JiraAPIResourceParameters.Parse() method
+
+To initialize the JiraAPIResourceParameters one only needs to do the following:
+
+	// Short declaration of the variable
+	params := configuration.JiraAPIResourceParameters{}
+
+	// Execution of the 'Parse' method
+	params.Parse()
+
+After that specific method, the flags.Parse method of the Go lang flags api will have been called.
+
+The package also defines a wide array of constants representing the flags name in the command line.
+*/
 package configuration
 
 import (
@@ -8,7 +25,7 @@ import (
 // Definition of constants that are use for the flags setup
 const (
 	// Parameters
-	jiraApiUrl       = "url"
+	jiraAPIURL       = "url"
 	username         = "username"
 	password         = "password"
 	prefix           = "issuePrefix"
@@ -20,8 +37,8 @@ const (
 	// Flags
 
 	// Default values and descriptions for both paramaters and flags
-	jiraApiUrlDefault           = ""
-	jiraApiUrlDescription       = "The base URL of the Jira API"
+	jiraAPIURLDefault           = ""
+	jiraAPIURLDescription       = "The base URL of the Jira API"
 	usernameDefault             = ""
 	usernameDescription         = "The username used to connect to the Jira API"
 	passwordDefault             = ""
@@ -38,6 +55,9 @@ const (
 	customFieldValueDescription = "The value of the field that will be updated (in case of update workflow)"
 )
 
+// JiraAPIResourceParameters is a struct that holds every possible parameters/flags known by the application.
+// They are all parsed via the flag.Parse() method of the Go flags api. The struct also contains the meta-parameters
+// (see meta-parametes.go).
 type JiraAPIResourceParameters struct {
 	JiraAPIUrl       *string
 	Username         *string
@@ -52,15 +72,20 @@ type JiraAPIResourceParameters struct {
 	Flags            JiraAPIResourceFlags
 }
 
+// This struct is used to separate the parameters (which takes values in the command line) of the flags (which don't).
+// That being said the values in this struct are still parsed via the Go flags api. They've been put 'aside' for clariry
+// purposes.
 type JiraAPIResourceFlags struct {
 	AlwaysOnParent bool // TODO
 }
 
+// Method that initialize every parameters/flags and makes the actual call the flag.Parse(). A few custom operation are
+// performed afterward such as initialization and validation.
 func (param *JiraAPIResourceParameters) Parse() {
 	var contextString *string
 	var issueListString *string
 
-	param.JiraAPIUrl = flag.String(jiraApiUrl, jiraApiUrlDefault, jiraApiUrlDescription)
+	param.JiraAPIUrl = flag.String(jiraAPIURL, jiraAPIURLDefault, jiraAPIURLDescription)
 	param.Username = flag.String(username, usernameDefault, usernameDescription)
 	param.Password = flag.String(password, passwordDefault, passwordDescription)
 	param.Prefix = flag.String(prefix, prefixDefault, prefixDescription)
@@ -104,9 +129,7 @@ func (param *JiraAPIResourceParameters) initializeContext(contextString *string)
 }
 
 func (param *JiraAPIResourceParameters) initializeIssueList(issueListString *string) {
-	if *issueListString == "" {
-		return
-	} else {
+	if *issueListString != "" {
 		param.IssueList = strings.Split(*issueListString, ",")
 
 		// More than 1 issue specified will set the 'Multiple' flag to true
