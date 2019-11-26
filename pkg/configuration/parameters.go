@@ -56,7 +56,7 @@ const (
 	customFieldTypeDescription  = "The type that is required by the field via the Jira API"
 	customFieldValueDefault     = ""
 	customFieldValueDescription = "The value of the field that will be updated (in case of update workflow)"
-	_ /*securedDefault*/        = true
+	_                           = /*securedDefault*/ true
 	securedDescription          = "Flags that indicates if the API calls should be made in session"
 	loggingLevelDefault         = "INFO"
 	loggingLevelDescription     = "The level of the loggers of the application {'ALL', 'DEBUG', 'ERROR', 'INFO', 'WARN', 'OFF'}"
