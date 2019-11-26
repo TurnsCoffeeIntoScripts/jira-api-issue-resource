@@ -1,44 +1,39 @@
+// See parameters.go for this package's comment
 package configuration
 
-import "strings"
+// Context is a simple integer to facilitate the handling of various context names via an enum-like strategy.
+type Context int
 
-type Context struct {
-	IssueIds    []string
-	ApiEndPoint string
-	HttpMethod  string
-	Metadata    Metadata
-	Body        []byte
+/*
+This is an enum-like constant block to define every available context of execution. The flow is determined
+by the 'executeFromContext()' method from the 'application' package in the context.go file
+*/
+const (
+	ReadIssue Context = iota
+	EditCustomField
+	Unknown
+)
 
-	// Context parametrization
-	ForceOnParent bool
+var names = [...]string{"ReadIssue", "EditCustomField", "Unknown"}
+
+// Returns the string value of the current Context
+func (c Context) String() string {
+
+	if c < ReadIssue || c >= Unknown {
+		return "Unknown"
+	}
+
+	return names[c]
+
 }
 
-func (c *Context) Initialize(md Metadata) {
-	c.Metadata = md
-
-	if md.ResourceConfiguration.Flags.ApplicationFlags.SingleIssue {
-		c.IssueIds = append(c.IssueIds, *md.ResourceConfiguration.Parameters.IssueID)
-	} else if md.ResourceConfiguration.Flags.ApplicationFlags.MultipleIssue {
-		for _, issue := range strings.Split(*md.ResourceConfiguration.Parameters.IssueList, ",") {
-			c.IssueIds = append(c.IssueIds, issue)
+// This function is the implementation of the 'valueOf' mechanic of an enum-like construct
+func GetContext(contextString string) Context {
+	for index, name := range names {
+		if name == contextString {
+			return Context(index)
 		}
 	}
 
-	c.ForceOnParent = *md.ResourceConfiguration.Flags.ApplicationFlags.ForceOnParent
-}
-
-func GetExecutionContext(conf JiraAPIResourceConfiguration) *Context {
-	ctx := &Context{}
-	md := Metadata{}
-
-	md.Initialize(conf)
-	ctx.Initialize(md)
-
-	if *conf.Flags.ContextFlags.CtxComment.Value {
-		ctx = SetContextComment(ctx)
-	} else if *conf.Flags.ContextFlags.CtxAddLabel.Value {
-		ctx = SetContextAddLabel(ctx)
-	}
-
-	return ctx
+	return Unknown
 }

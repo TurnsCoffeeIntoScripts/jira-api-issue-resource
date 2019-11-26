@@ -6,161 +6,129 @@ import (
 	"errors"
 	"fmt"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/configuration"
-	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/domain"
+	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/log"
+	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/status"
 	"net/http"
 	"strings"
 )
 
-func ApiCall(ctx configuration.Context) (bool, error) {
-	if ctx.Metadata.ResourceConfiguration.Flags.ApplicationFlags.ZeroIssue {
-		return noIssueApiCall(ctx)
-	} else if ctx.Metadata.ResourceConfiguration.Flags.ApplicationFlags.SingleIssue {
-		return singleApiCall(ctx, ctx.IssueIds[0])
-	} else if ctx.Metadata.ResourceConfiguration.Flags.ApplicationFlags.MultipleIssue {
-		return multipleApiCall(ctx)
+type CreateBodyFN func() []byte
+type GetEndpointFN func(string) string
+type JsonObjectFN func() interface{}
+
+type JiraAPI struct {
+	HttpMethod string
+	Body       []byte
+	JsonObject interface{}
+
+	// 'url' is not exported because at this level it contains the credentials
+	url string
+}
+
+func CreateAPIFromParams(params configuration.JiraAPIResourceParameters, fnBody CreateBodyFN, fnEndpoint GetEndpointFN, fnJsonObj JsonObjectFN, httpMethod string) (JiraAPI, error) {
+	var err error
+	api := JiraAPI{}
+
+	if fnBody != nil {
+		api.Body = fnBody()
+	}
+
+	if fnJsonObj != nil {
+		api.JsonObject = fnJsonObj()
+	}
+
+	api.HttpMethod = httpMethod
+
+	if fnEndpoint == nil {
+		return api, errors.New("not allowed to have null endpoint creation function")
 	} else {
-		// TODO script?
+		api.url = fnEndpoint(*params.JiraAPIUrl)
 	}
 
-	return true, nil
-
+	return api, err
 }
 
-func noIssueApiCall(ctx configuration.Context) (bool, error) {
-	ctx.Metadata.HttpMethod = ctx.HttpMethod
-	_, err := executeApiCall(ctx.Metadata, ctx.ApiEndPoint, ctx.Body, false)
-
-	return err == nil, err
-}
-
-func singleApiCall(ctx configuration.Context, issueId string) (bool, error) {
-	ctx.Metadata.HttpMethod = http.MethodGet
-	issue, getErr := executeApiCall(ctx.Metadata, "issue/"+issueId, nil, true)
-	if getErr != nil {
-		return false, getErr
-	}
-
-	currentIssueId := issueId
-	if ctx.ForceOnParent && issue.HasParent() {
-		currentIssueId = issue.GetParent().Key
-	}
-
-	apiOperation := checkUrl(ctx.ApiEndPoint, configuration.IssuePlaceholder, currentIssueId)
-
-	ctx.Metadata.HttpMethod = ctx.HttpMethod
-	_, err := executeApiCall(ctx.Metadata, apiOperation, ctx.Body, true)
-
-	return err == nil, err
-}
-
-func multipleApiCall(ctx configuration.Context) (bool, error) {
-	allOk := true
-	for idx, i := range ctx.IssueIds {
-		_, err := singleApiCall(ctx, i)
-
-		if err != nil {
-			allOk = false
-
-			fmt.Printf("API call #%d failed with reason %v", idx, err)
-			/*if !*ctx.Metadata.ResourceFlags.ForceFinish {
-				return ok, err
-			}*/
-		}
-	}
-
-	if !allOk {
-		return false, errors.New("one or more API call failed")
-	}
-
-	return true, nil
-}
-
-func checkUrl(url string, findValue, replaceValue string) string {
-	if strings.Contains(url, findValue) {
-		return strings.ReplaceAll(url, findValue, replaceValue)
-	}
-
-	return url
-}
-
-func apiCallDummy(md configuration.Metadata, op string, body []byte) (*domain.Issue, error) {
-	return nil, nil
-}
-
-func executeApiCall(md configuration.Metadata, op string, body []byte, needDomainObject bool) (*domain.Issue, error) {
+func (api *JiraAPI) Call() (interface{}, error) {
 	client := http.DefaultClient
+	req, newRequestErr := http.NewRequest(api.HttpMethod, api.url, bytes.NewBuffer(api.Body))
 
-	baseUrl := md.AuthenticatedUrl()
-	if !strings.HasSuffix(baseUrl, "/") {
-		baseUrl = baseUrl + "/"
-	}
-
-	if !strings.HasSuffix(op, "/") {
-		op = op + "/"
-	}
-
-	url := baseUrl + op
-	var req *http.Request
-	var newReqErr error
-	if body == nil {
-		req, newReqErr = http.NewRequest(md.HttpMethod, url, nil)
-	} else {
-		req, newReqErr = http.NewRequest(md.HttpMethod, url, bytes.NewBuffer(body))
-	}
-
-	if newReqErr != nil {
-		errMsg := fmt.Sprintf("http request failed with error %s", newReqErr)
-		return nil, errors.New(errMsg)
+	if newRequestErr != nil {
+		return nil, newRequestErr
 	}
 
 	if req != nil {
 		req.Header.Set("Content-Type", "application/json")
+
+		if status.Secured {
+			req.Header.Set("cookie", fmt.Sprintf("%s=%s", status.SessionName, status.SessionValue))
+		}
 	}
 
-	fmt.Println(op)
-	fmt.Println(string(body))
+	resp, _ := client.Do(req)
+	//fmt.Printf("Received response with HTTP %s\n", resp.Status)
+	log.Logger.Infof("Received response with %s", fmt.Sprintf("HTTP %s", resp.Status))
 
-	resp, respErr := client.Do(req)
-
-	defer resp.Body.Close()
-
-	status := 0
-	buffer := new(bytes.Buffer)
 	if resp != nil {
-		_, readBodyErr := buffer.ReadFrom(resp.Body)
+		defer resp.Body.Close()
+	}
 
-		if readBodyErr == nil {
-			fmt.Println("BODY:")
-			fmt.Println(buffer.String())
+	canProcessBody, err := api.processResponse(resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	buffer := new(bytes.Buffer)
+	if resp != nil && canProcessBody {
+		count, readBodyErr := buffer.ReadFrom(resp.Body)
+
+		//fmt.Printf("Read %v bytes\n", count)
+		log.Logger.Debugf("Read %v bytes\n", count)
+
+		if readBodyErr != nil {
+			//fmt.Println("Unable to read body of response")
+			log.Logger.Error("Unable to read body of response")
+			return nil, readBodyErr
 		}
-
-		status = resp.StatusCode
+		err = json.Unmarshal(buffer.Bytes(), &api.JsonObject)
 	}
 
-	if status < http.StatusOK || status > 299 {
-		errMsg := fmt.Sprintf("http request failed (HTTP %d)", status)
-		return nil, errors.New(errMsg)
+	return api.JsonObject, err
+}
+
+// Deprecated: This was used early on in the development to ease the connection
+// process. Now the resource uses session cookies.
+func (api *JiraAPI) createUrlWithCredentials(url, username, password string) {
+	// Construct the user:password@ string
+	usrpw := username + ":" + password + "@"
+
+	// Find the index to which we'll insert said string in url
+	usrpwInsertIndex := strings.Index(url, "://") + 3
+
+	// Remove any trailing '/' from the url because if needed they'll be added later on
+	// by the specific service executing the api call
+	strings.TrimSuffix(url, "/")
+
+	// Build the final url value
+	api.url = url[:usrpwInsertIndex] + usrpw + url[usrpwInsertIndex:]
+}
+
+func (api *JiraAPI) processResponse(resp *http.Response) (bool, error) {
+	if resp == nil {
+		return false, errors.New("nil response was returned")
 	}
 
-	if respErr != nil {
-		errMsg := fmt.Sprintf("http request failed (HTTP %d) with error %s", status, respErr)
-		return nil, errors.New(errMsg)
+	if ok, err := Is4xx(resp.StatusCode); ok {
+		return false, err
 	}
 
-	if needDomainObject && md.HttpMethod == http.MethodGet {
-		var issue domain.Issue
-
-		if decodeErr := json.Unmarshal(buffer.Bytes(), &issue); decodeErr != nil {
-			errMsg := fmt.Sprintf("decoding of json object failed with error %s", decodeErr)
-			return nil, errors.New(errMsg)
-		}
-
-		if issue.Id == "" {
-			errMsg := fmt.Sprintf("Issue doesn't exists")
-			return nil, errors.New(errMsg)
-		}
-		return &issue, nil
+	if ok, err := Is5xx(resp.StatusCode); ok {
+		return false, err
 	}
 
-	return nil, nil
+	if !HasValidContent(resp) {
+		return false, nil
+	}
+
+	return true, nil
 }
