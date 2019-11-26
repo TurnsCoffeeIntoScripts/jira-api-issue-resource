@@ -11,37 +11,36 @@ import (
 )
 
 type ServiceReadIssue struct {
-	issueId         string
-	customFieldKey  string
-	customFieldName string
+	issueId   string
+	fieldKey  string
+	fieldName string
 }
 
 func (s *ServiceReadIssue) InitJiraAPI(params configuration.JiraAPIResourceParameters) (rest.JiraAPI, error) {
 	s.issueId = params.ActiveIssue
-	s.customFieldName = *params.CustomFieldName
+	s.fieldName = *params.CustomFieldName
 
 	return service.PreInitJiraAPI(s, params, http.MethodGet)
 }
 
-func (s *ServiceReadIssue) GetReadResults() map[string]string {
+func (s *ServiceReadIssue) GetResults() map[string]string {
 	var m = make(map[string]string)
-	m[helpers.CustomFieldKey] = s.customFieldKey
+	m[helpers.ReadingFieldKey] = s.fieldKey
 	return m
 }
 
-func (s *ServiceReadIssue) SetReadResults(result map[string]string) {
-
+func (s *ServiceReadIssue) SetResultsFromPrevious(result map[string]string) {
 }
 
-func (s *ServiceReadIssue) GetEndpoint() string {
-	return fmt.Sprintf("/issue/%s?expand=names", s.issueId)
+func (s *ServiceReadIssue) GetEndpoint(url string) string {
+	return fmt.Sprintf("%s/issue/%s?expand=names", url, s.issueId)
 }
 
-func (s *ServiceReadIssue) CreateBody() []byte {
+func (s *ServiceReadIssue) CreateRequestBody() []byte {
 	return nil
 }
 
-func (s *ServiceReadIssue) JSONObject() interface{} {
+func (s *ServiceReadIssue) JSONResponseObject() interface{} {
 	return &Issue{}
 }
 
@@ -50,10 +49,14 @@ func (s *ServiceReadIssue) PostAPICall(result interface{}) error {
 		return errors.New("failed to convert result of type interface{} to issue of type reading.Issue")
 	} else {
 
-		if s.customFieldName != "" {
-			s.customFieldKey = helpers.FindCustomName(issue.Names.CustomFields, s.customFieldName)
+		if s.fieldName != "" {
+			s.fieldKey = helpers.FindCustomName(issue.Names.CustomFields, s.fieldName)
 		}
 	}
 
 	return nil
+}
+
+func (s *ServiceReadIssue) Name() string {
+	return "ServiceReadIssue"
 }

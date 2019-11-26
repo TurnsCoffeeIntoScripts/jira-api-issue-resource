@@ -16,42 +16,44 @@ import (
 // The ServiceEditCustomField struct implements the service.Service interface. It defines the workflow of editing
 // an existing Jira issue.
 type ServiceEditCustomField struct {
-	issueId          string
-	customfieldKey   string
-	customfieldValue string
+	issueId    string
+	fieldKey   string
+	fieldType  string
+	fieldValue string
 }
 
 // See service/service.go for details
 func (s *ServiceEditCustomField) InitJiraAPI(params configuration.JiraAPIResourceParameters) (rest.JiraAPI, error) {
 	s.issueId = params.ActiveIssue
-	s.customfieldValue = *params.CustomFieldValue
+	s.fieldValue = *params.CustomFieldValue
+	s.fieldType = *params.CustomFieldType
 
 	return service.PreInitJiraAPI(s, params, http.MethodPut)
 }
 
 // See service/service.go for details
-func (s *ServiceEditCustomField) GetReadResults() map[string]string {
+func (s *ServiceEditCustomField) GetResults() map[string]string {
 	return nil
 }
 
 // See service/service.go for details
-func (s *ServiceEditCustomField) SetReadResults(result map[string]string) {
-	s.customfieldKey = result[helpers.CustomFieldKey]
+func (s *ServiceEditCustomField) SetResultsFromPrevious(result map[string]string) {
+	s.fieldKey = result[helpers.ReadingFieldKey]
 }
 
 // See service/service.go for details
-func (s *ServiceEditCustomField) GetEndpoint() string {
-	return fmt.Sprintf("/issue/%s", s.issueId)
+func (s *ServiceEditCustomField) GetEndpoint(url string) string {
+	return fmt.Sprintf("%s/issue/%s", url, s.issueId)
 }
 
 // See service/service.go for details
-func (s *ServiceEditCustomField) CreateBody() []byte {
+func (s *ServiceEditCustomField) CreateRequestBody() []byte {
 	i := Issue{}
 
-	if numVal, err := strconv.Atoi(s.customfieldValue); err == nil {
-		i.AddField(s.customfieldKey, numVal)
+	if numVal, err := strconv.Atoi(s.fieldValue); err == nil && s.fieldType != "string" {
+		i.AddField(s.fieldKey, numVal)
 	} else {
-		i.AddField(s.customfieldKey, s.customfieldValue)
+		i.AddField(s.fieldKey, s.fieldValue)
 	}
 	b, err := json.Marshal(i)
 	if err != nil {
@@ -62,11 +64,15 @@ func (s *ServiceEditCustomField) CreateBody() []byte {
 }
 
 // See service/service.go for details
-func (s *ServiceEditCustomField) JSONObject() interface{} {
+func (s *ServiceEditCustomField) JSONResponseObject() interface{} {
 	return nil
 }
 
 // See service/service.go for details
 func (s *ServiceEditCustomField) PostAPICall(result interface{}) error {
 	return nil
+}
+
+func (s *ServiceEditCustomField) Name() string {
+	return "ServiceEditCustomField"
 }

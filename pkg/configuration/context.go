@@ -7,7 +7,7 @@ type Context int
 /*
 This is an enum-like constant block to define every available context of execution. The flow is determined
 by the 'executeFromContext()' method from the 'application' package in the context.go file
- */
+*/
 const (
 	ReadIssue Context = iota
 	EditCustomField

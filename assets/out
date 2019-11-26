@@ -21,6 +21,7 @@ username=$(jq -r '.source.username // ""' < ${payload})
 password=$(jq -r '.source.password // ""' < ${payload})
 context=$(jq -r '.source.context // ""' < ${payload})
 customFieldName=$(jq -r '.source.custom_field_name // ""' < ${payload})
+customFieldType=$(jq -r '.source.custom_field_type // ""' < ${payload})
 
 # Reading params configuration
 issuesFile=$(jq -r '.params.file // ""' < ${payload})
@@ -35,4 +36,5 @@ jiraApiResource \
     --context=$context \
     --issues=$issues \
     --customFieldName=$customFieldName \
+    --customFieldType=$customFieldType \
     --customFieldValue=$customFieldValue

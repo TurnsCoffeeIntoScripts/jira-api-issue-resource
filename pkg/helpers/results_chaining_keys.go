@@ -1,5 +1,5 @@
 package helpers
 
 const (
-	CustomFieldKey = "customFieldKey"
+	ReadingFieldKey = "FieldKey"
 )

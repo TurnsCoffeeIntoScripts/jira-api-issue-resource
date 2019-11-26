@@ -6,12 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/configuration"
+	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/log"
+	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/status"
 	"net/http"
 	"strings"
 )
 
 type CreateBodyFN func() []byte
-type GetEndpointFN func() string
+type GetEndpointFN func(string) string
 type JsonObjectFN func() interface{}
 
 type JiraAPI struct {
@@ -26,7 +28,7 @@ type JiraAPI struct {
 func CreateAPIFromParams(params configuration.JiraAPIResourceParameters, fnBody CreateBodyFN, fnEndpoint GetEndpointFN, fnJsonObj JsonObjectFN, httpMethod string) (JiraAPI, error) {
 	var err error
 	api := JiraAPI{}
-	api.createUrlWithCredentials(*params.JiraAPIUrl, *params.Username, *params.Password)
+
 	if fnBody != nil {
 		api.Body = fnBody()
 	}
@@ -40,7 +42,7 @@ func CreateAPIFromParams(params configuration.JiraAPIResourceParameters, fnBody 
 	if fnEndpoint == nil {
 		return api, errors.New("not allowed to have null endpoint creation function")
 	} else {
-		api.url = api.url + fnEndpoint()
+		api.url = fnEndpoint(*params.JiraAPIUrl)
 	}
 
 	return api, err
@@ -56,32 +58,46 @@ func (api *JiraAPI) Call() (interface{}, error) {
 
 	if req != nil {
 		req.Header.Set("Content-Type", "application/json")
+
+		if status.Secured {
+			req.Header.Set("cookie", fmt.Sprintf("%s=%s", status.SessionName, status.SessionValue))
+		}
 	}
 
 	resp, _ := client.Do(req)
-	fmt.Printf("Received response with HTTP %s\n", resp.Status)
+	//fmt.Printf("Received response with HTTP %s\n", resp.Status)
+	log.Logger.Infof("Received response with %s", fmt.Sprintf("HTTP %s", resp.Status))
 
 	if resp != nil {
 		defer resp.Body.Close()
 	}
 
-	buffer := new(bytes.Buffer)
-	if resp != nil {
-		count, readBodyErr := buffer.ReadFrom(resp.Body)
+	canProcessBody, err := api.processResponse(resp)
 
-		fmt.Printf("Read %v bytes\n", count)
-
-		if readBodyErr != nil {
-			fmt.Println("Unable to read body of response")
-			return nil, readBodyErr
-		}
+	if err != nil {
+		return nil, err
 	}
 
-	err := json.Unmarshal(buffer.Bytes(), &api.JsonObject)
+	buffer := new(bytes.Buffer)
+	if resp != nil && canProcessBody {
+		count, readBodyErr := buffer.ReadFrom(resp.Body)
+
+		//fmt.Printf("Read %v bytes\n", count)
+		log.Logger.Debugf("Read %v bytes\n", count)
+
+		if readBodyErr != nil {
+			//fmt.Println("Unable to read body of response")
+			log.Logger.Error("Unable to read body of response")
+			return nil, readBodyErr
+		}
+		err = json.Unmarshal(buffer.Bytes(), &api.JsonObject)
+	}
 
 	return api.JsonObject, err
 }
 
+// Deprecated: This was used early on in the development to ease the connection
+// process. Now the resource uses session cookies.
 func (api *JiraAPI) createUrlWithCredentials(url, username, password string) {
 	// Construct the user:password@ string
 	usrpw := username + ":" + password + "@"
@@ -97,88 +113,22 @@ func (api *JiraAPI) createUrlWithCredentials(url, username, password string) {
 	api.url = url[:usrpwInsertIndex] + usrpw + url[usrpwInsertIndex:]
 }
 
-/*func ApiCall(ctx configuration.Context) (bool, error) {
+func (api *JiraAPI) processResponse(resp *http.Response) (bool, error) {
+	if resp == nil {
+		return false, errors.New("nil response was returned")
+	}
+
+	if ok, err := Is4xx(resp.StatusCode); ok {
+		return false, err
+	}
+
+	if ok, err := Is5xx(resp.StatusCode); ok {
+		return false, err
+	}
+
+	if !HasValidContent(resp) {
+		return false, nil
+	}
 
 	return true, nil
-
 }
-
-func executeApiCall(md configuration.Metadata, op string, body []byte, needDomainObject bool) (*domain.Issue, error) {
-	client := http.DefaultClient
-
-	baseUrl := ""
-	//baseUrl := md.AuthenticatedUrl()
-	if !strings.HasSuffix(baseUrl, "/") {
-		baseUrl = baseUrl + "/"
-	}
-
-	if !strings.HasSuffix(op, "/") {
-		op = op + "/"
-	}
-
-	url := baseUrl + op
-	var req *http.Request
-	var newReqErr error
-	if body == nil {
-		req, newReqErr = http.NewRequest(md.HttpMethod, url, nil)
-	} else {
-		req, newReqErr = http.NewRequest(md.HttpMethod, url, bytes.NewBuffer(body))
-	}
-
-	if newReqErr != nil {
-		errMsg := fmt.Sprintf("http request failed with error %s", newReqErr)
-		return nil, errors.New(errMsg)
-	}
-
-	if req != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-
-	fmt.Println(op)
-	fmt.Println(string(body))
-
-	resp, respErr := client.Do(req)
-
-	defer resp.Body.Close()
-
-	status := 0
-	buffer := new(bytes.Buffer)
-	if resp != nil {
-		_, readBodyErr := buffer.ReadFrom(resp.Body)
-
-		if readBodyErr == nil {
-			fmt.Println("BODY:")
-			fmt.Println(buffer.String())
-		}
-
-		status = resp.StatusCode
-	}
-
-	if status < http.StatusOK || status > 299 {
-		errMsg := fmt.Sprintf("http request failed (HTTP %d)", status)
-		return nil, errors.New(errMsg)
-	}
-
-	if respErr != nil {
-		errMsg := fmt.Sprintf("http request failed (HTTP %d) with error %s", status, respErr)
-		return nil, errors.New(errMsg)
-	}
-
-	if needDomainObject && md.HttpMethod == http.MethodGet {
-		var issue domain.Issue
-
-		if decodeErr := json.Unmarshal(buffer.Bytes(), &issue); decodeErr != nil {
-			errMsg := fmt.Sprintf("decoding of json object failed with error %s", decodeErr)
-			return nil, errors.New(errMsg)
-		}
-
-		if issue.Id == "" {
-			errMsg := fmt.Sprintf("Issue doesn't exists")
-			return nil, errors.New(errMsg)
-		}
-		return &issue, nil
-	}
-
-	return nil, nil
-}
-*/

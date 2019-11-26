@@ -34,7 +34,7 @@ func (app *JiraAPIResourceApp) executeFromContext() error {
 			return err
 		}
 
-		srv.SetReadResults(preSrv.GetReadResults())
+		srv.SetResultsFromPrevious(preSrv.GetResults())
 	}
 
 	return service.ExecuteService(srv, app.params)

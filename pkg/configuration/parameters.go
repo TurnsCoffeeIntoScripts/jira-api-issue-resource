@@ -19,6 +19,7 @@ package configuration
 
 import (
 	"flag"
+	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/log"
 	"strings"
 )
 
@@ -28,13 +29,15 @@ const (
 	jiraAPIURL       = "url"
 	username         = "username"
 	password         = "password"
-	prefix           = "issuePrefix"
 	context          = "context"
 	issueList        = "issues"
 	customFieldName  = "customFieldName"
+	customFieldType  = "customFieldType"
 	customFieldValue = "customFieldValue"
+	loggingLevel     = "loggingLevel"
 
 	// Flags
+	secured = "secured"
 
 	// Default values and descriptions for both paramaters and flags
 	jiraAPIURLDefault           = ""
@@ -43,16 +46,20 @@ const (
 	usernameDescription         = "The username used to connect to the Jira API"
 	passwordDefault             = ""
 	passwordDescription         = "The password needed to connect to the Jira API"
-	prefixDefault               = "*"
-	prefixDescription           = "The string prefix with which the issues/tickets will be acted upon"
 	contextDefault              = ""
 	contextDescription          = "The context of execution. {'EditCustomField'}"
 	issueListDefault            = ""
 	issueListDescription        = "The issue or list of issues to execute the specified context to"
 	customFieldNameDefault      = ""
 	customFieldNameDescription  = "Certain operation (such as edits) might require the user to specify the name of the custome field so that the resource may find the appropriate custom field"
+	customFieldTypeDefault      = "string"
+	customFieldTypeDescription  = "The type that is required by the field via the Jira API"
 	customFieldValueDefault     = ""
 	customFieldValueDescription = "The value of the field that will be updated (in case of update workflow)"
+	_ /*securedDefault*/        = true
+	securedDescription          = "Flags that indicates if the API calls should be made in session"
+	loggingLevelDefault         = "INFO"
+	loggingLevelDescription     = "The level of the loggers of the application {'ALL', 'DEBUG', 'ERROR', 'INFO', 'WARN', 'OFF'}"
 )
 
 // JiraAPIResourceParameters is a struct that holds every possible parameters/flags known by the application.
@@ -62,21 +69,23 @@ type JiraAPIResourceParameters struct {
 	JiraAPIUrl       *string
 	Username         *string
 	Password         *string
-	Prefix           *string
 	Context          Context
 	IssueList        []string
 	CustomFieldName  *string
+	CustomFieldType  *string
 	CustomFieldValue *string
-	ActiveIssue      string         // The **SINGLE** issue that the resource is currently processing
-	Meta             MetaParameters //
-	Flags            JiraAPIResourceFlags
+	LoggingLevel     *string
+
+	ActiveIssue string         // The **SINGLE** issue that the resource is currently processing
+	Meta        MetaParameters //
+	Flags       JiraAPIResourceFlags
 }
 
 // This struct is used to separate the parameters (which takes values in the command line) of the flags (which don't).
 // That being said the values in this struct are still parsed via the Go flags api. They've been put 'aside' for clariry
 // purposes.
 type JiraAPIResourceFlags struct {
-	AlwaysOnParent bool // TODO
+	Secured *bool
 }
 
 // Method that initialize every parameters/flags and makes the actual call the flag.Parse(). A few custom operation are
@@ -88,11 +97,14 @@ func (param *JiraAPIResourceParameters) Parse() {
 	param.JiraAPIUrl = flag.String(jiraAPIURL, jiraAPIURLDefault, jiraAPIURLDescription)
 	param.Username = flag.String(username, usernameDefault, usernameDescription)
 	param.Password = flag.String(password, passwordDefault, passwordDescription)
-	param.Prefix = flag.String(prefix, prefixDefault, prefixDescription)
 	contextString = flag.String(context, contextDefault, contextDescription)
 	issueListString = flag.String(issueList, issueListDefault, issueListDescription)
 	param.CustomFieldName = flag.String(customFieldName, customFieldNameDefault, customFieldNameDescription)
+	param.CustomFieldType = flag.String(customFieldType, customFieldTypeDefault, customFieldTypeDescription)
 	param.CustomFieldValue = flag.String(customFieldValue, customFieldValueDefault, customFieldValueDescription)
+	param.LoggingLevel = flag.String(loggingLevel, loggingLevelDefault, loggingLevelDescription)
+
+	param.Flags.Secured = flag.Bool(secured, true, securedDescription)
 
 	if !param.Meta.parsed {
 		flag.Parse()
@@ -101,6 +113,7 @@ func (param *JiraAPIResourceParameters) Parse() {
 
 	param.initializeContext(contextString)
 	param.initializeIssueList(issueListString)
+	param.initLogger()
 	param.validate()
 }
 
@@ -135,4 +148,9 @@ func (param *JiraAPIResourceParameters) initializeIssueList(issueListString *str
 		// More than 1 issue specified will set the 'Multiple' flag to true
 		param.Meta.MultipleIssue = len(param.IssueList) > 1
 	}
+}
+
+func (param *JiraAPIResourceParameters) initLogger() {
+	log.Logger = log.ResourceLogger{}
+	log.Logger.InitLoggerFromParam(*param.LoggingLevel)
 }
