@@ -37,7 +37,8 @@ const (
 	loggingLevel     = "loggingLevel"
 
 	// Flags
-	secured = "secured"
+	secured       = "secured"
+	forceOnParent = "forceOnParent"
 
 	// Default values and descriptions for both paramaters and flags
 	jiraAPIURLDefault           = ""
@@ -56,10 +57,12 @@ const (
 	customFieldTypeDescription  = "The type that is required by the field via the Jira API"
 	customFieldValueDefault     = ""
 	customFieldValueDescription = "The value of the field that will be updated (in case of update workflow)"
-	_                           = /*securedDefault*/ true
-	securedDescription          = "Flags that indicates if the API calls should be made in session"
 	loggingLevelDefault         = "INFO"
 	loggingLevelDescription     = "The level of the loggers of the application {'ALL', 'DEBUG', 'ERROR', 'INFO', 'WARN', 'OFF'}"
+	_                           = /*securedDefault*/ true
+	securedDescription          = "Flags that indicates if the API calls should be made in session"
+	_                           = /*forceOnParentDefault*/ false
+	forceOnParentDescription    = "Flags that indicates if we want to force all operation on the parent issue (if there's one)"
 )
 
 // JiraAPIResourceParameters is a struct that holds every possible parameters/flags known by the application.
@@ -85,7 +88,8 @@ type JiraAPIResourceParameters struct {
 // That being said the values in this struct are still parsed via the Go flags api. They've been put 'aside' for clariry
 // purposes.
 type JiraAPIResourceFlags struct {
-	Secured *bool
+	Secured       *bool
+	ForceOnParent *bool
 }
 
 // Method that initialize every parameters/flags and makes the actual call the flag.Parse(). A few custom operation are
@@ -94,6 +98,7 @@ func (param *JiraAPIResourceParameters) Parse() {
 	var contextString *string
 	var issueListString *string
 
+	// Parsing parameters
 	param.JiraAPIUrl = flag.String(jiraAPIURL, jiraAPIURLDefault, jiraAPIURLDescription)
 	param.Username = flag.String(username, usernameDefault, usernameDescription)
 	param.Password = flag.String(password, passwordDefault, passwordDescription)
@@ -104,7 +109,9 @@ func (param *JiraAPIResourceParameters) Parse() {
 	param.CustomFieldValue = flag.String(customFieldValue, customFieldValueDefault, customFieldValueDescription)
 	param.LoggingLevel = flag.String(loggingLevel, loggingLevelDefault, loggingLevelDescription)
 
+	// Parsing flags
 	param.Flags.Secured = flag.Bool(secured, true, securedDescription)
+	param.Flags.ForceOnParent = flag.Bool(forceOnParent, false, forceOnParentDescription)
 
 	if !param.Meta.parsed {
 		flag.Parse()
@@ -126,6 +133,9 @@ func (param *JiraAPIResourceParameters) validate() {
 		// In this case we are missing one or more mandatory parameters
 		// This also causes the input parameters to not be valid
 		param.Meta.mandatoryPresent = false
+		param.Meta.valid = false
+	} else if len(param.IssueList) == 0 {
+		// This is the case where the issue's list was passed but it was empty
 		param.Meta.valid = false
 	} else if param.Context == Unknown {
 		// The specified context wasn't recognized, therefore it isn't valid
