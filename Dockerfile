@@ -29,6 +29,8 @@ RUN apk --no-cache add \
 COPY --from=builder /app/bin/jiraApiResource /usr/local/bin/
 
 # Copy assets
-COPY assets/ /opt/resource/
+COPY assets/check /opt/resource/check
+COPY assets/in /opt/resource/in
+COPY assets/out /opt/resource/out
 
 FROM resource
