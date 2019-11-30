@@ -22,12 +22,26 @@ password=$(jq -r '.source.password // ""' < ${payload})
 context=$(jq -r '.source.context // ""' < ${payload})
 customFieldName=$(jq -r '.source.custom_field_name // ""' < ${payload})
 customFieldType=$(jq -r '.source.custom_field_type // ""' < ${payload})
+loggingLevel=$(jq -r '.source.logging_level // ""' < ${payload})
+forceOnParent=$(jq -r '.source.force_on_parent // ""' < ${payload})
 
 # Reading params configuration
 issuesFile=$(jq -r '.params.file // ""' < ${payload})
 issues=$(<$issuesFile)
 customFieldValueFile=$(jq -r '.params.custom_field_value // ""' < ${payload})
 customFieldValue=$(<$customFieldValueFile)
+
+flags=""
+
+if [[ ! -z $username ]] && [[ -z $password ]]; then
+    flags="$flags --secured"
+fi
+
+if [[ ! -z $forceOnParent ]]; then
+    if [[ "$forceOnParent" == 'y' ]] && [[ "$forceOnParent" == 'Y' ]]; then
+        flags="$flags --forceOnParent"
+    fi
+fi
 
 jiraApiResource \
     --url=$url \
@@ -37,4 +51,6 @@ jiraApiResource \
     --issues=$issues \
     --customFieldName=$customFieldName \
     --customFieldType=$customFieldType \
-    --customFieldValue=$customFieldValue
+    --customFieldValue=$customFieldValue \
+    --loggingLevel=$loggingLevel \
+    $flags

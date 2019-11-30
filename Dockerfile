@@ -28,4 +28,7 @@ RUN apk --no-cache add \
 # Copy the built binary into the bin folder
 COPY --from=builder /app/bin/jiraApiResource /usr/local/bin/
 
+# Copy assets
+COPY assets/ /opt/resource/
+
 FROM resource
