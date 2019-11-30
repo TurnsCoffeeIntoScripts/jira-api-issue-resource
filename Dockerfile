@@ -1,5 +1,10 @@
 FROM golang:1.12 AS builder
 
+LABEL maintainer="Guillaume Rivest" \
+    authors="Guillaume Rivest" \
+    version="0.0.1" \
+    description="Jira API resource for Concourse CI"
+
 # Copy everything from the jira-api-ressource module to /app in the image
 COPY . /app
 
@@ -32,5 +37,9 @@ COPY --from=builder /app/bin/jiraApiResource /usr/local/bin/
 COPY assets/check /opt/resource/check
 COPY assets/in /opt/resource/in
 COPY assets/out /opt/resource/out
+
+RUN chmod +x /opt/resource/check /opt/resource/in /opt/resource/out
+
+WORKDIR /opt/resource
 
 FROM resource

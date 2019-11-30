@@ -19,3 +19,7 @@ jiraApiResource
 # IDEs
 .idea/
 *.iml
+
+# git
+*.bak
+*.orig
