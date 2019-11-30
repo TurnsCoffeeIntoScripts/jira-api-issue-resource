@@ -27,7 +27,9 @@ forceOnParent=$(jq -r '.source.force_on_parent // ""' < ${payload})
 
 # Reading params configuration
 issuesFile=$(jq -r '.params.file // ""' < ${payload})
-issues=$(<$issuesFile)
+echo $(pwd)
+ls -l
+issues=$(<${issuesFile}/*.txt)
 customFieldValueFile=$(jq -r '.params.custom_field_value // ""' < ${payload})
 customFieldValue=$(<$customFieldValueFile)
 
