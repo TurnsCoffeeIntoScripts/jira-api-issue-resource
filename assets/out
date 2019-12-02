@@ -26,12 +26,11 @@ loggingLevel=$(jq -r '.source.logging_level // ""' < ${payload})
 forceOnParent=$(jq -r '.source.force_on_parent // ""' < ${payload})
 
 # Reading params configuration
-issuesFile=$(jq -r '.params.file // ""' < ${payload})
-echo $(pwd)
-ls -l
-issues=$(<${issuesFile}/*.txt)
+issuesFileDirectory=$(jq -r '.params.file_location // ""' < ${payload})
 customFieldValueFile=$(jq -r '.params.custom_field_value // ""' < ${payload})
-customFieldValue=$(<$customFieldValueFile)
+
+issues=$(<$1/${issuesFileDirectory}/*.txt)
+customFieldValue=$(<$1/$customFieldValueFile)
 
 flags=""
 
