@@ -2,6 +2,7 @@ package rest
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -49,7 +50,12 @@ func CreateAPIFromParams(params configuration.JiraAPIResourceParameters, fnBody 
 }
 
 func (api *JiraAPI) Call() (interface{}, error) {
-	client := http.DefaultClient
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	//client := http.DefaultClient
+	client := http.Client{Transport: tr}
 	req, newRequestErr := http.NewRequest(api.HttpMethod, api.url, bytes.NewBuffer(api.Body))
 
 	if newRequestErr != nil {
@@ -69,7 +75,7 @@ func (api *JiraAPI) Call() (interface{}, error) {
 	if errDo != nil {
 		return nil, errDo
 	}
-	
+
 	defer resp.Body.Close()
 	log.Logger.Infof("Received response with %s", fmt.Sprintf("HTTP %s", resp.Status))
 
