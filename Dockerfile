@@ -29,7 +29,7 @@ RUN apk --no-cache add \
         jq \
         bash \
         ca-certificates \
-        && update-ca-certificates 2>/dev/null || true
+        && update-ca-certificates 2>/dev/null || true \
 ;
 
 # Copy the built binary into the bin folder
