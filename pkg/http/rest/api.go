@@ -66,15 +66,14 @@ func (api *JiraAPI) Call() (interface{}, error) {
 
 	resp, errDo := client.Do(req)
 
-	if resp != nil {
-		defer resp.Body.Close()
-		log.Logger.Infof("Received response with %s", fmt.Sprintf("HTTP %s", resp.Status))
-	} else {
+	if errDo != nil {
 		return nil, errDo
 	}
+	
+	defer resp.Body.Close()
+	log.Logger.Infof("Received response with %s", fmt.Sprintf("HTTP %s", resp.Status))
 
 	canProcessBody, err := api.processResponse(resp)
-
 	if err != nil {
 		return nil, err
 	}
