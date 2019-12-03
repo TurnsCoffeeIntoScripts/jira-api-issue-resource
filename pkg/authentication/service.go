@@ -23,6 +23,10 @@ func (s *ServiceAuthenticateSession) InitJiraAPI(params configuration.JiraAPIRes
 	s.username = *params.Username
 	s.password = *params.Password
 
+	if s.username == "" || s.password == "" {
+		return rest.JiraAPI{}, errors.New("missing username and/or password for ServiceAuthenticateSession")
+	}
+
 	return service.PreInitJiraAPI(s, params, http.MethodPost)
 }
 

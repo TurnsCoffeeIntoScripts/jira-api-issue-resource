@@ -5,8 +5,8 @@ package configuration
 type Context int
 
 /*
-This is an enum-like constant block to define every available context of execution. The flow is determined
-by the 'executeFromContext()' method from the 'application' package in the context.go file
+This is an enum-like constant block to define every available context of execution.
+TODO: update comments
 */
 const (
 	ReadIssue Context = iota

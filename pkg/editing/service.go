@@ -4,6 +4,7 @@ package editing
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/configuration"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/helpers"
@@ -27,6 +28,10 @@ func (s *ServiceEditCustomField) InitJiraAPI(params configuration.JiraAPIResourc
 	s.issueId = params.ActiveIssue
 	s.fieldValue = *params.CustomFieldValue
 	s.fieldType = *params.CustomFieldType
+
+	if s.issueId == "" || s.fieldValue == "" || s.fieldType == "" {
+		return rest.JiraAPI{}, errors.New("missing value(s) for ServiceEditCustomField")
+	}
 
 	return service.PreInitJiraAPI(s, params, http.MethodPut)
 }

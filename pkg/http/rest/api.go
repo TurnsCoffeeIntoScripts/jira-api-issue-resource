@@ -21,7 +21,7 @@ type JiraAPI struct {
 	Body       []byte
 	JsonObject interface{}
 
-	// 'url' is not exported because at this level it contains the credentials
+	// 'url' is not exported because at this level it may contains the credentials
 	url string
 }
 
@@ -64,12 +64,13 @@ func (api *JiraAPI) Call() (interface{}, error) {
 		}
 	}
 
-	resp, _ := client.Do(req)
-	//fmt.Printf("Received response with HTTP %s\n", resp.Status)
-	log.Logger.Infof("Received response with %s", fmt.Sprintf("HTTP %s", resp.Status))
+	resp, errDo := client.Do(req)
 
 	if resp != nil {
 		defer resp.Body.Close()
+		log.Logger.Infof("Received response with %s", fmt.Sprintf("HTTP %s", resp.Status))
+	} else {
+		return nil, errDo
 	}
 
 	canProcessBody, err := api.processResponse(resp)
@@ -79,7 +80,7 @@ func (api *JiraAPI) Call() (interface{}, error) {
 	}
 
 	buffer := new(bytes.Buffer)
-	if resp != nil && canProcessBody {
+	if canProcessBody {
 		count, readBodyErr := buffer.ReadFrom(resp.Body)
 
 		//fmt.Printf("Read %v bytes\n", count)
