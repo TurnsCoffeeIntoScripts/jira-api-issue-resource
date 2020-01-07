@@ -2,7 +2,7 @@ FROM golang:1.12 AS builder
 
 LABEL maintainer="Guillaume Rivest" \
     authors="Guillaume Rivest" \
-    version="0.0.1" \
+    version="1.0.0" \
     description="Jira API resource for Concourse CI"
 
 # Copy everything from the jira-api-ressource module to /app in the image
