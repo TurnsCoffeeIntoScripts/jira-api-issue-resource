@@ -23,7 +23,7 @@ all: fmt $(BIN) ; $(info $(M) building executable...) @ ## Build program binary
 		-o $(BIN)/$(PACKAGE) cmd/jira-api/main.go
 
 .PHONY: full
-full: fmt lint $(BIN) ; $(info $(M) building executable...) @ ## Build program binary (with go lint)
+full: fmt lint test $(BIN) ; $(info $(M) building executable...) @ ## Build program binary (with go lint)
 	$Q $(GO) build \
 		-tags release \
 		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
@@ -64,7 +64,7 @@ test-verbose: ARGS=-v            ## Run tests in verbose mode with coverage repo
 test-race:    ARGS=-race         ## Run tests with race detector
 $(TEST_TARGETS): NAME=$(MAKECMDGOALS:test-%=%)
 $(TEST_TARGETS): test
-check test tests: fmt lint ; $(info $(M) running $(NAME:%=% )tests...) @ ## Run tests
+check test tests: fmt ; $(info $(M) running $(NAME:%=% )tests...) @ ## Run tests
 	$Q $(GO) test -timeout $(TIMEOUT)s $(ARGS) $(TESTPKGS)
 
 test-xml: fmt lint | $(GO2XUNIT) ; $(info $(M) running $(NAME:%=% )tests...) @ ## Run tests with xUnit output
@@ -79,7 +79,7 @@ COVERAGE_HTML = $(COVERAGE_DIR)/index.html
 .PHONY: test-coverage test-coverage-tools
 test-coverage-tools: | $(GOCOVMERGE) $(GOCOV) $(GOCOVXML)
 test-coverage: COVERAGE_DIR := $(CURDIR)/test/coverage.$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
-test-coverage: fmt lint test-coverage-tools ; $(info $(M) running coverage tests...) @ ## Run coverage tests
+test-coverage: fmt test-coverage-tools ; $(info $(M) running coverage tests...) @ ## Run coverage tests
 	$Q mkdir -p $(COVERAGE_DIR)/coverage
 	$Q for pkg in $(TESTPKGS); do \
 		$(GO) test \

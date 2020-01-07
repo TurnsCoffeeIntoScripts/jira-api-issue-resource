@@ -7,15 +7,20 @@ import (
 	"errors"
 	"fmt"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/configuration"
+	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/helpers"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/log"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-resource/pkg/status"
 	"net/http"
-	"strings"
 )
 
 type CreateBodyFN func() []byte
 type GetEndpointFN func(string) string
 type JsonObjectFN func() interface{}
+
+type JiraAPIInterface interface {
+	Call() (interface{}, error)
+	processResponse(resp *http.Response) (bool, error)
+}
 
 type JiraAPI struct {
 	HttpMethod string
@@ -42,6 +47,8 @@ func CreateAPIFromParams(params configuration.JiraAPIResourceParameters, fnBody 
 
 	if fnEndpoint == nil {
 		return api, errors.New("not allowed to have null endpoint creation function")
+	} else if helpers.IsStringPtrNilOrEmtpy(params.JiraAPIUrl) {
+		return api, errors.New("jira API URL was not specified in the parameters")
 	} else {
 		api.url = fnEndpoint(*params.JiraAPIUrl)
 	}
@@ -54,7 +61,6 @@ func (api *JiraAPI) Call() (interface{}, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	//client := http.DefaultClient
 	client := http.Client{Transport: tr}
 	req, newRequestErr := http.NewRequest(api.HttpMethod, api.url, bytes.NewBuffer(api.Body))
 
@@ -65,11 +71,11 @@ func (api *JiraAPI) Call() (interface{}, error) {
 	if req != nil {
 		req.Header.Set("Content-Type", "application/json")
 
-		if status.Secured {
-			req.Header.Set("cookie", fmt.Sprintf("%s=%s", status.SessionName, status.SessionValue))
-		}
+		log.Logger.Debug("Setting http basic auth for api call")
+		req.SetBasicAuth(status.Username, status.Password)
 	}
 
+	log.Logger.Infof("Sending %s request", api.HttpMethod)
 	resp, errDo := client.Do(req)
 
 	if errDo != nil {
@@ -102,33 +108,16 @@ func (api *JiraAPI) Call() (interface{}, error) {
 	return api.JsonObject, err
 }
 
-// Deprecated: This was used early on in the development to ease the connection
-// process. Now the resource uses session cookies.
-func (api *JiraAPI) createUrlWithCredentials(url, username, password string) {
-	// Construct the user:password@ string
-	usrpw := username + ":" + password + "@"
-
-	// Find the index to which we'll insert said string in url
-	usrpwInsertIndex := strings.Index(url, "://") + 3
-
-	// Remove any trailing '/' from the url because if needed they'll be added later on
-	// by the specific service executing the api call
-	strings.TrimSuffix(url, "/")
-
-	// Build the final url value
-	api.url = url[:usrpwInsertIndex] + usrpw + url[usrpwInsertIndex:]
-}
-
 func (api *JiraAPI) processResponse(resp *http.Response) (bool, error) {
 	if resp == nil {
 		return false, errors.New("nil response was returned")
 	}
 
-	if ok, err := Is4xx(resp.StatusCode); ok {
+	if ok, err := Is4xx(resp); ok {
 		return false, err
 	}
 
-	if ok, err := Is5xx(resp.StatusCode); ok {
+	if ok, err := Is5xx(resp); ok {
 		return false, err
 	}
 
