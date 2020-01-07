@@ -1,6 +1,6 @@
 # jira-api-resource
 
-** README NOT UPDATED WITH LATEST RCs **  
+<sub>Some section needs to be updated</sub>
 
 | Version       | Build status | Scrutinizer |
 |---------------|--------------|-------------|

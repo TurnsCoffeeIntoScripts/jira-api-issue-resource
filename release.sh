@@ -15,6 +15,7 @@ fi
 if [[ $? -eq "0" ]]; then
     # Tag in git when the image was successfully push
     git tag -a $1 -m "Tagging version $1"
+    git push origin $1
 else
     exit 1
 fi
