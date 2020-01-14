@@ -2,9 +2,11 @@
 
 <sub>Some section needs to be updated</sub>
 
-| Version       | Build status | Scrutinizer |
-|---------------|--------------|-------------|
-| `1.0.1`  | [![Build Status](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-issue-resource.svg?branch=master)](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-issue-resource) | [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/TurnsCoffeeIntoScripts/jira-api-issue-resource/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/TurnsCoffeeIntoScripts/jira-api-issue-resource/?branch=master) |
+Version: 1.0.1
+
+| Build status | Scrutinizer |
+|--------------|-------------|
+| [![Build Status](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-issue-resource.svg?branch=master)](https://travis-ci.org/TurnsCoffeeIntoScripts/jira-api-issue-resource) | [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/TurnsCoffeeIntoScripts/jira-api-issue-resource/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/TurnsCoffeeIntoScripts/jira-api-issue-resource/?branch=master) |
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e6ea2afc744d4fbf8bffc65e794155f4)](https://www.codacy.com/app/TurnsCoffeeIntoScripts/jira-api-issue-resource?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=TurnsCoffeeIntoScripts/jira-api-issue-resource&amp;utm_campaign=Badge_Grade)   
 <sub>Project certification on default branch (master)</sub>
