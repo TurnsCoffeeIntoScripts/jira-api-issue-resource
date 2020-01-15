@@ -14,19 +14,15 @@ fi
 # $2 ==> increment type (MAJOR,MINOR,PATCH)
 
 # Increment version in README.me
-# Increment version in the Dockerfile 'LABEL' step
 case $2 in 
     MAJOR)
         sed -r -i 's/(Version:\s)([0-9])\.([0-9])\.([0-9])/echo "\1$((\2+1)).0.0"/ge' README.md
-        sed -r -i 's/(version=\")([0-9])\.([0-9])\.([0-9])/echo "    \1$((\2+1)).0.0\" \\"/ge' Dockerfile
         ;;
     MINOR)
         sed -r -i 's/(Version:\s)([0-9])\.([0-9])\.([0-9])/echo "\1\2.$((\3+1)).0"/ge' README.md
-        sed -r -i 's/(version=\")([0-9])\.([0-9])\.([0-9])/echo "    \1\2.$((\3+1)).0\" \\"/ge' Dockerfile
         ;;
     PATCH)
         sed -r -i 's/(Version:\s)([0-9])\.([0-9])\.([0-9])/echo "\1\2.\3.$((\4+1))"/ge' README.md
-        sed -r -i 's/(version=\")([0-9])\.([0-9])\.([0-9])/echo "    \1\2.\3.$((\4+1))\" \\"/ge' Dockerfile
         ;;
     *)
         echo "Invalid increment type (MAJOR,MINOR,PATCH)"
@@ -43,11 +39,13 @@ git commit -m"Incrementing version in doc ($1)"
 git push
 
 # Building docker image
-docker image build -t turnscoffeeintoscripts/jira-api-issue-resource:$1 .
+docker build -t turnscoffeeintoscripts/jira-api-issue-resource:$1 \
+    --build-arg VERSION=$1 \
+    .
 
 if [[ $? -eq "0" ]]; then
     # Pushing docker image
-    docker image push turnscoffeeintoscripts/jira-api-issue-resource:$1
+    docker push turnscoffeeintoscripts/jira-api-issue-resource:$1
 else
     exit 1
 fi
