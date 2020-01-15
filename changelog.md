@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] 
 ### Changed
 - Modified release.sh so that it now updates the version in Dockerfile's LABEL step
+- Changed how HTTP 4xx and 5xx bodies are read and printed in the logger
 
 ## [1.0.1] - 2020-01-14
 ### Added
