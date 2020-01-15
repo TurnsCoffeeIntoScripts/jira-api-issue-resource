@@ -14,20 +14,26 @@ fi
 # $2 ==> increment type (MAJOR,MINOR,PATCH)
 
 # Increment version in README.me
+# Increment version in the Dockerfile 'LABEL' step
 case $2 in 
     MAJOR)
         sed -r -i 's/(Version:\s)([0-9])\.([0-9])\.([0-9])/echo "\1$((\2+1)).\3.\4"/ge' README.md
+        sed -r -i 's/(version=\")([0-9])\.([0-9])\.([0-9])/echo "\1$((\2+1)).\3.\4\" \\"/ge' Dockerfile
         ;;
     MINOR)
         sed -r -i 's/(Version:\s)([0-9])\.([0-9])\.([0-9])/echo "\1\2.$((\3+1)).\4"/ge' README.md
+        sed -r -i 's/(version=\")([0-9])\.([0-9])\.([0-9])/echo "\1\2.$((\3+1)).\4\" \\"/ge' Dockerfile
         ;;
     PATCH)
         sed -r -i 's/(Version:\s)([0-9])\.([0-9])\.([0-9])/echo "\1\2.\3.$((\4+1))"/ge' README.md
+        sed -r -i 's/(version=\")([0-9])\.([0-9])\.([0-9])/echo "\1\2.\3.$((\4+1))\" \\"/ge' Dockerfile
         ;;
     *)
         echo "Invalid increment type (MAJOR,MINOR,PATCH)"
         ;;
 esac
+
+
 
 # Change the unreleased to current date in changelog.md
 sed -r -i "s/(## \[Unreleased\])/echo '\1 \n\n## [$1] - $(date +%Y-%m-%d)'/ge" changelog.md
