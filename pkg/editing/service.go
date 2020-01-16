@@ -98,7 +98,9 @@ func (s *ServiceEditCustomField) extractValue(params configuration.JiraAPIResour
 			return "", err
 		}
 
-		return string(b), nil
+		cleanedString := helpers.CleanString(string(b))
+
+		return cleanedString, nil
 	}
 
 	return "", errors.New("no value received in ServiceEditCustomField. A problem must have occured in the validation stage")

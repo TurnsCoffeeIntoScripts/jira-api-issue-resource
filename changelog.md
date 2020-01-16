@@ -5,6 +5,8 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] 
+### Added
+- When reading value from file we make sure the resulting string is cleaned (no brackets and such)
 
 ## [1.0.2] - 2020-01-15
 ### Changed
