@@ -182,7 +182,10 @@ func (param *JiraAPIResourceParameters) initializeContext(contextString *string)
 
 func (param *JiraAPIResourceParameters) initializeIssueList(issueListString *string) {
 	if *issueListString != "" {
-		param.IssueList = strings.Split(*issueListString, ",")
+		// Clean list to make sure we don't have [,],{,},(,) characters
+		issueListStringCleaned := helpers.CleanString(*issueListString)
+
+		param.IssueList = strings.Split(issueListStringCleaned, ",")
 
 		param.IssueList = helpers.CleanStringSlice(param.IssueList)
 
