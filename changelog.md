@@ -5,6 +5,8 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] 
+
+## [1.0.4] - 2020-01-16
 ### Changed
 - Change made in 1.0.3 regarding value from file should have been made for issue list instead
 ### Removed
