@@ -5,6 +5,8 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] 
+
+## [1.1.0] - 2020-01-21
 ### Added
 - 'in' script for concourse integration
 - Allows to read the status (open, in progress, etc...) of an issue
