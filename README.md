@@ -2,7 +2,7 @@
 
 <sub>Some section needs to be updated</sub>
 
-Version: 1.3.5
+Version: 1.3.6
 
 | Build status | Scrutinizer |
 |--------------|-------------|
