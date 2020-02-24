@@ -47,6 +47,17 @@ fi
 pushd /tmp/build/get
     resourceDestination=$destination/jira-api-issue-resource.json
 
+    echo "echo'ing 'in' call to jira-api-issue-resource..."
+    echo "jiraApiIssueResource \
+        --url="$url" \
+        --username="$username" \
+        --password="$password" \
+        --destination="$resourceDestination" \
+        --context="$context" \
+        --issues="$issues" \
+        --loggingLevel="$loggingLevel" \
+        $flags"
+
     jiraApiIssueResource \
         --url="$url" \
         --username="$username" \
