@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] 
 
+## [1.3.7] - 2020-02-24
+
 ## [1.3.6] - 2020-02-24
 ### Added
 - Output to &3 and to file the json result in the 'in' asset 
