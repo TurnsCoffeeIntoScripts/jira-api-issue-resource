@@ -5,6 +5,8 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] 
+### Changed
+- Modified 'out' models to match concourse Go struct VersionResult
 
 ## [1.3.8] - 2020-02-24
 ### Changed

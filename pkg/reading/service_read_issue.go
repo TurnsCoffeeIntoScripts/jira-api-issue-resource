@@ -85,7 +85,7 @@ func (s *ServiceReadIssue) ExecuteAsLastStep(params configuration.JiraAPIResourc
 
 		switch ctx {
 		case configuration.ReadIssue:
-			vi := VersionReadIssueResponse{Issues: params.IssueList}
+			vi := VersionReadIssueResponse{Issues: helpers.SliceToCommaSeparatedString(params.IssueList)}
 			err := json.NewEncoder(file).Encode(InResponseIssue{
 				Issues: vi,
 			})

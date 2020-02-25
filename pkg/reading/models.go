@@ -3,11 +3,11 @@ package reading
 import "github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/assets"
 
 type VersionReadStatusResponse struct {
-	Status string `json:"status"`
+	Status string `json:"ref"`
 }
 
 type VersionReadIssueResponse struct {
-	Issues []string `json:"issues"`
+	Issues string `json:"ref"`
 }
 
 // TODO to complete. This struct is use to output to a json file as the output of the resource within a concourse pipeline

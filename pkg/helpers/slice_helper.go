@@ -10,3 +10,17 @@ func CleanStringSlice(slice []string) []string {
 
 	return r
 }
+
+func SliceToCommaSeparatedString(slice []string) string {
+	if slice == nil || len(slice) == 0 {
+		return "."
+	}
+
+	var result string
+	for _, s := range slice {
+		result += s
+		result += ","
+	}
+
+	return result
+}
