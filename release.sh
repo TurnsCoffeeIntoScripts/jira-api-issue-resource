@@ -47,6 +47,7 @@ echo "=================================================================="
 echo -e $GREEN"git add/commit/push of README.md and changelog.md"$NO_COLOR
 git add README.md
 git add changelog.md
+git add example/pipeline.yml
 git commit -m"Incrementing version in doc ($1)"
 git push
 
