@@ -5,6 +5,8 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] 
+
+## [1.3.10] - 2020-03-19
 ### Added
 - Example pipeline with associated tasks to help people configuration this resource alongside glif.
 ### Changed
