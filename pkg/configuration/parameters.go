@@ -183,7 +183,7 @@ func (param *JiraAPIResourceParameters) validate() {
 	param.Meta.mandatoryPresent = true
 	param.Meta.valid = true
 
-	if *param.JiraAPIUrl == "" || *param.Username == "" || *param.Password == "" || helpers.IsStringPtrNilOrEmtpy(param.Destination) {
+	if *param.JiraAPIUrl == "" || *param.Username == "" || *param.Password == "" {
 		// In this case we are missing one or more mandatory parameters
 		// This also causes the input parameters to not be valid
 		param.Meta.mandatoryPresent = false
@@ -251,9 +251,12 @@ func (param *JiraAPIResourceParameters) initializeIssueList(issueListString *str
 		// Clean list to make sure we don't have [,],{,},(,) characters
 		issueListStringCleaned := helpers.CleanString(*issueListString)
 
-		param.IssueList = strings.Fields(issueListStringCleaned)
+		// If it's a space seperated list it's converted into a comma-seperated list
+		if strings.Contains(issueListStringCleaned, " ") {
+			issueListStringCleaned = strings.ReplaceAll(issueListStringCleaned, " ", ",")
+		}
 
-		param.IssueList = helpers.CleanStringSlice(param.IssueList)
+		param.IssueList = strings.Split(issueListStringCleaned, ",")
 
 		// More than 1 issue specified will set the 'Multiple' flag to true
 		param.Meta.MultipleIssue = len(param.IssueList) > 1

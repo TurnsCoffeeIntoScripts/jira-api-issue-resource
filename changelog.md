@@ -5,8 +5,15 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] 
+### Changed
+- The `destination` parameter is no longer mandatory for all contexts
+- The issue list is now always required to be a comma-seperated list and will be converted into one if it's not
+### Removed
+- `CleanStringSlice` helper was unused and deemed useless
 
 ## [1.3.11] - 2020-05-27
+### Changed
+- Quickfix to take into account the destination parameters
 
 ## [1.3.10] - 2020-03-19
 ### Added

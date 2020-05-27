@@ -59,7 +59,7 @@ pushd /tmp/build/put
         --customFieldValueFromFile="$customFieldValueFromFile" \
         --commentBody="$commentBody" \
         --loggingLevel="$loggingLevel" \
-        --destination-"$destination" \
+        --destination="$destination" \
         $flags
 
     # Print json

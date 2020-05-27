@@ -100,7 +100,7 @@ func (s *ServiceReadIssue) ExecuteAsLastStep(params configuration.JiraAPIResourc
 			md := assets.Metadata{}
 			md = append(md, mdf)
 			err := json.NewEncoder(file).Encode(InResponseIssue{
-				Issues: vi,
+				Issues:   vi,
 				Metadata: md,
 			})
 
