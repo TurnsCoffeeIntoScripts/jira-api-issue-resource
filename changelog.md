@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] 
 
+## [1.3.11] - 2020-05-27
+
 ## [1.3.10] - 2020-03-19
 ### Added
 - Example pipeline with associated tasks to help people configuration this resource alongside glif.
