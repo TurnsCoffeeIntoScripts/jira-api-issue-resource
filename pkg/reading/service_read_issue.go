@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/assets"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/configuration"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/helpers"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/http/rest"
@@ -94,9 +95,13 @@ func (s *ServiceReadIssue) ExecuteAsLastStep(params configuration.JiraAPIResourc
 				return err
 			}
 		case configuration.ReadStatus:
-			vs := VersionReadStatusResponse{Status: s.statusName}
-			err := json.NewEncoder(file).Encode(InResponseStatus{
-				Version: vs,
+			vi := VersionReadIssueResponse{Issues: helpers.SliceToCommaSeparatedString(params.IssueList)}
+			mdf := assets.MetadataField{Name: "Status", Value: s.statusName}
+			md := assets.Metadata{}
+			md = append(md, mdf)
+			err := json.NewEncoder(file).Encode(InResponseIssue{
+				Issues: vi,
+				Metadata: md,
 			})
 
 			if err != nil {

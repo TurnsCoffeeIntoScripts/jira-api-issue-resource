@@ -26,3 +26,6 @@ jiraApiIssueResource
 
 # Tests
 test/coverage.*
+
+# Misc
+issue.json
