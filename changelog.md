@@ -5,6 +5,8 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] 
+
+## [1.3.12] - 2020-05-27
 ### Changed
 - The `destination` parameter is no longer mandatory for all contexts
 - The issue list is now always required to be a comma-seperated list and will be converted into one if it's not
