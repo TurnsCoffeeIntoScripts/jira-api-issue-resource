@@ -46,7 +46,7 @@ fi
 
 resourceDestination=$TMPDIR/jira-issue
 
-echo "Executing jiraApiIssueResource (in) for $issues"
+echo "Executing jiraApiIssueResource (check) for $issues"
 jiraApiIssueResource \
     --url="$url" \
     --username="$username" \
@@ -57,4 +57,4 @@ jiraApiIssueResource \
     --loggingLevel="$loggingLevel" \
     $flags
 
-jq -s "map({ref: .version.ref})" $TMPDIR/*.json >&3
+jq -s 'map({ref: (.version.ref + "_" + .metadata[].value)})' $TMPDIR/*.json >&3
