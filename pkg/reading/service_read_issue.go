@@ -96,24 +96,24 @@ func (s *ServiceReadIssue) Name() string {
 }
 
 func (s *ServiceReadIssue) ExecuteAsLastStep(params configuration.JiraAPIResourceParameters) error {
-	if file, err := resulthelper.CreateDestination(s.destination, "json"); err != nil {
-		return err
-	} else {
-		ctx := params.Context
-
-		switch ctx {
-		case configuration.ReadIssue:
-			vi := VersionReadIssueResponse{Issues: helpers.SliceToCommaSeparatedString(params.IssueList)}
-			err := json.NewEncoder(file).Encode(InResponseIssue{
-				Issues: vi,
-			})
-
-			if err != nil {
-				return err
-			}
-		}
-	}
-
+	//if file, err := resulthelper.CreateDestination(s.destination, "json"); err != nil {
+	//	return err
+	//} else {
+	//	ctx := params.Context
+	//
+	//	switch ctx {
+	//	case configuration.ReadIssue:
+	//		vi := VersionReadIssueResponse{Issues: helpers.SliceToCommaSeparatedString(params.IssueList)}
+	//		err := json.NewEncoder(file).Encode(InResponseIssue{
+	//			Issues: vi,
+	//		})
+	//
+	//		if err != nil {
+	//			return err
+	//		}
+	//	}
+	//}
+	//
 	return nil
 }
 

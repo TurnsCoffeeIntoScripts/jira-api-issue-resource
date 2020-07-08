@@ -12,7 +12,7 @@ PATH=$PATH:/opt/resource
 PATH=/usr/local/bin/:$PATH
 TMPDIR=${TMPDIR:-/tmp}
 
-destination=${1}
+dest=$1
 
 payload=$(mktemp $TMPDIR/jira-api-issue-resource-request.XXXXXX)
 
@@ -55,8 +55,8 @@ if [[ "$context" != "ReadStatus" ]] || [[ "$context" != "ReadIssue" ]]; then
   context="ReadIssue"
 fi
 
-pushd /tmp/build/get
-    resourceDestination=$destination/jira-api-issue-resource
+pushd $dest
+    resourceDestination=./jira-issue
 
     echo "Executing jiraApiIssueResource (in) for $issues"
     jiraApiIssueResource \

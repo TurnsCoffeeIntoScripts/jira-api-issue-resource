@@ -12,7 +12,7 @@ PATH=$PATH:/opt/resource
 PATH=/usr/local/bin/:$PATH
 TMPDIR=${TMPDIR:-/tmp}
 
-destination=${1}
+src=$1
 
 payload=$(mktemp $TMPDIR/jira-api-issue-resource-request.XXXXXX)
 
@@ -44,7 +44,7 @@ else
   issues=""
 fi
 
-pushd /tmp/build/put
+pushd $src
 
     echo "Executing jiraApiIssueResource (out) for $issues"
     jiraApiIssueResource \

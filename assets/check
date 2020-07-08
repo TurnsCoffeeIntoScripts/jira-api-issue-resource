@@ -1,3 +1,60 @@
 #!/bin/bash
 
-echo "[]"
+set -e
+
+exec 3>&1 # make stdout available as fd3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+
+# for assets
+PATH=$PATH:/opt/resource
+
+# for jq
+PATH=/usr/local/bin/:$PATH
+TMPDIR=${TMPDIR:-/tmp}
+
+destination=${1}
+
+payload=$(mktemp $TMPDIR/jira-api-issue-resource-request.XXXXXX)
+
+cat > $payload <&0
+
+# Reading source configuration
+url=$(jq -r '.source.url // ""' < ${payload})
+username=$(jq -r '.source.username // ""' < ${payload})
+password=$(jq -r '.source.password // ""' < ${payload})
+context=$(jq -r '.source.context // ""' < ${payload})
+loggingLevel=$(jq -r '.source.logging_level // ""' < ${payload})
+flags=$(jq -r '.source.flags // ""' < ${payload})
+
+# Reading params configuration
+issuesList=$(jq -r '.params.issues // ""' < ${payload})
+issuesFileDirectory=$(jq -r '.params.issue_file_location // ""' < ${payload})
+
+if [ ! -z "$issuesList" ]; then
+  issues=$issuesList
+elif [ ! -z "$issuesFileDirectory" ]; then
+  issues=$(<$1/${issuesFileDirectory}/*.txt)
+else
+  issues=""
+fi
+
+# In the 'in' asset (so either in a 'get' step or the second part of a 'put' step)
+# A 'read' context is needed. So if it isn't one, default back to 'ReadIssue'
+if [[ "$context" != "ReadStatus" ]] || [[ "$context" != "ReadIssue" ]]; then
+  context="ReadIssue"
+fi
+
+resourceDestination=$TMPDIR/jira-issue
+
+echo "Executing jiraApiIssueResource (in) for $issues"
+jiraApiIssueResource \
+    --url="$url" \
+    --username="$username" \
+    --password="$password" \
+    --destination="$resourceDestination" \
+    --context="$context" \
+    --issues="$issues" \
+    --loggingLevel="$loggingLevel" \
+    $flags
+
+jq . $TMPDIR/*.json | jq -s "map(.)" >&3
