@@ -27,8 +27,8 @@ loggingLevel=$(jq -r '.source.logging_level // ""' < ${payload})
 flags=$(jq -r '.source.flags // ""' < ${payload})
 
 # Reading params configuration
-issuesList=$(jq -r '.params.issues // ""' < ${payload})
-issuesFileDirectory=$(jq -r '.params.issue_file_location // ""' < ${payload})
+issuesList=$(jq -r '.source.issues // ""' < ${payload})
+issuesFileDirectory=$(jq -r '.source.issue_file_location // ""' < ${payload})
 
 if [ ! -z "$issuesList" ]; then
   issues=$issuesList
