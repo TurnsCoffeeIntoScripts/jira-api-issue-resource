@@ -57,4 +57,4 @@ jiraApiIssueResource \
     --loggingLevel="$loggingLevel" \
     $flags
 
-jq . $TMPDIR/*.json | jq -s "map(.)" >&3
+jq -s "map({ref: .version.ref})" $TMPDIR/*.json >&3
