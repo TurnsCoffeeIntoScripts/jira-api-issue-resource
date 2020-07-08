@@ -31,6 +31,7 @@ issuesList=$(jq -r '.params.issues // ""' < ${payload})
 issuesFileDirectory=$(jq -r '.params.issue_file_location // ""' < ${payload})
 
 # Reading version (if any)
+# TODO euhm why??
 version=$(jq -r '.version.ref // ""' < ${payload})
 
 if [ ! -z "$issuesList" ]; then
@@ -43,6 +44,7 @@ fi
 
 # If issue is still empty, check the version in the request as it might be stored there if we are in the follow-up 'get'
 # step following a put
+# TODO WHY IS THAT THERE??
 if [ -z $issues ]; then
   issues=$version
 fi
@@ -54,7 +56,7 @@ if [[ "$context" != "ReadStatus" ]] || [[ "$context" != "ReadIssue" ]]; then
 fi
 
 pushd /tmp/build/get
-    resourceDestination=$destination/jira-api-issue-resource.json
+    resourceDestination=$destination/jira-api-issue-resource
 
     echo "Executing jiraApiIssueResource (in) for $issues"
     jiraApiIssueResource \

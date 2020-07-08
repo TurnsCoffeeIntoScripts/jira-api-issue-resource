@@ -8,9 +8,10 @@ import (
 	"github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/configuration"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/helpers"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/http/rest"
-	"github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/result"
+	resulthelper "github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/result"
 	"github.com/TurnsCoffeeIntoScripts/jira-api-issue-resource/pkg/service"
 	"net/http"
+	"os"
 )
 
 type ServiceReadIssue struct {
@@ -21,12 +22,15 @@ type ServiceReadIssue struct {
 	fieldName   string
 	statusName  string
 	destination string
+
+	invokingContext configuration.Context
 }
 
 func (s *ServiceReadIssue) InitJiraAPI(params configuration.JiraAPIResourceParameters) (rest.JiraAPI, error) {
 	s.issueId = params.ActiveIssue
 	s.fieldName = *params.EditCustomFieldParam.CustomFieldName
 	s.destination = *params.Destination
+	s.invokingContext = params.Context
 
 	return service.PreInitJiraAPI(s, params, http.MethodGet)
 }
@@ -69,6 +73,19 @@ func (s *ServiceReadIssue) PostAPICall(result interface{}) error {
 		if issue.Fields.Status != nil {
 			s.statusName = issue.Fields.Status.Name
 		}
+
+		if s.destination != "" {
+			if file, err := resulthelper.CreateDestination(s.destination+"_"+s.issueId, "json"); err != nil {
+				return errors.New("failed to create destination file")
+			} else {
+				switch s.invokingContext {
+				case configuration.ReadStatus:
+					if err := writeStatusToFile(file, s.issueId, s.statusName); err != nil {
+						return err
+					}
+				}
+			}
+		}
 	}
 
 	return nil
@@ -79,7 +96,7 @@ func (s *ServiceReadIssue) Name() string {
 }
 
 func (s *ServiceReadIssue) ExecuteAsLastStep(params configuration.JiraAPIResourceParameters) error {
-	if file, err := result.CreateDestination(s.destination); err != nil {
+	if file, err := resulthelper.CreateDestination(s.destination, "json"); err != nil {
 		return err
 	} else {
 		ctx := params.Context
@@ -94,20 +111,24 @@ func (s *ServiceReadIssue) ExecuteAsLastStep(params configuration.JiraAPIResourc
 			if err != nil {
 				return err
 			}
-		case configuration.ReadStatus:
-			vi := VersionReadIssueResponse{Issues: helpers.SliceToCommaSeparatedString(params.IssueList)}
-			mdf := assets.MetadataField{Name: "Status", Value: s.statusName}
-			md := assets.Metadata{}
-			md = append(md, mdf)
-			err := json.NewEncoder(file).Encode(InResponseIssue{
-				Issues:   vi,
-				Metadata: md,
-			})
-
-			if err != nil {
-				return err
-			}
 		}
+	}
+
+	return nil
+}
+
+func writeStatusToFile(file *os.File, issueId, statusName string) error {
+	vi := VersionReadIssueResponse{Issues: issueId}
+	mdf := assets.MetadataField{Name: "Status", Value: statusName}
+	md := assets.Metadata{}
+	md = append(md, mdf)
+	err := json.NewEncoder(file).Encode(InResponseIssue{
+		Issues:   vi,
+		Metadata: md,
+	})
+
+	if err != nil {
+		return err
 	}
 
 	return nil

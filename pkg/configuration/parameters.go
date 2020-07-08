@@ -56,7 +56,7 @@ const (
 	usernameDescription                 = "The username used to connect to the Jira API"
 	passwordDefault                     = ""
 	passwordDescription                 = "The password needed to connect to the Jira API"
-	destinationDefault                  = "./"
+	destinationDefault                  = ""
 	destinationDescription              = "The destination to output new version(s) when using the 'in'"
 	contextDefault                      = ""
 	contextDescription                  = "The context of execution. {'ReadIssue', 'EditCustomField'}"

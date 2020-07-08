@@ -6,9 +6,11 @@ import (
 	"strings"
 )
 
-func CreateDestination(destination string) (*os.File, error) {
-	if !strings.Contains(destination, ".") {
-		destination += ".txt"
+func CreateDestination(destination, ext string) (*os.File, error) {
+	if strings.Contains(ext, ".") {
+		destination += ext
+	} else {
+		destination += "." + ext
 	}
 	return os.Create(filepath.Join(destination))
 }
