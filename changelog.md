@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] 
 
+## [1.3.13] - 2020-07-08
+
 ## [1.3.12] - 2020-05-27
 ### Changed
 - The `destination` parameter is no longer mandatory for all contexts
